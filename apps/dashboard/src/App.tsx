@@ -22,6 +22,7 @@ import { RemindersPage } from '@/features/reminders/pages/RemindersPage';
 import { LandingPage } from '@/features/marketing/pages/LandingPage';
 import { PricingPage } from '@/features/marketing/pages/PricingPage';
 import { SignupPage } from '@/features/marketing/pages/SignupPage';
+import { StaffPage } from '@/features/staff/pages/StaffPage';
 import { useAuthStore } from '@/store/auth-store';
 
 function App() {
@@ -169,6 +170,15 @@ function App() {
         element={
           <AuthGuard>
             <RemindersPage />
+          </AuthGuard>
+        }
+      />
+
+      <Route
+        path="/staff"
+        element={
+          <AuthGuard>
+            <StaffPage />
           </AuthGuard>
         }
       />

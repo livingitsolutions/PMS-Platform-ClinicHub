@@ -14,6 +14,7 @@ import {
   Stethoscope,
   LogOut,
   Database,
+  UserCog,
 } from 'lucide-react';
 
 interface AppLayoutProps {
@@ -32,6 +33,7 @@ export function AppLayout({ children }: AppLayoutProps) {
     { name: 'Visits', href: '/visits', icon: FileText },
     { name: 'Invoices', href: '/invoices', icon: DollarSign },
     { name: 'Procedures', href: '/procedures', icon: Stethoscope },
+    { name: 'Staff', href: '/staff', icon: UserCog },
   ];
 
   const isActive = (path: string) => {
