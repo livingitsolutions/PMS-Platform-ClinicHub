@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, Stethoscope, FileText, CreditCard, Download } from 'lucide-react';
+import { ArrowLeft, User, Stethoscope, FileText, CreditCard, Download, CheckCircle, PlayCircle, XCircle, ChevronDown } from 'lucide-react';
 import {
   Card,
   CardContent,
@@ -9,7 +9,7 @@ import {
   CardDescription,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useVisit } from '../hooks/useVisit';
+import { useVisit, useUpdateVisit } from '../hooks/useVisit';
 import { VisitProceduresTable } from '../components/VisitProceduresTable';
 import { AddProcedureDialog } from '../components/AddProcedureDialog';
 import { EditVisitNotesDialog } from '../components/EditVisitNotesDialog';
@@ -24,6 +24,22 @@ import { getVisitProceduresForPDF } from '@/features/documents/api/documentDataA
 import { useClinicStore } from '@/store/clinic-store';
 import { DashboardLayout, PageHeader } from '@/components/layout/DashboardLayout';
 
+type VisitStatus = 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
+
+const STATUS_CONFIG: Record<VisitStatus, { label: string; bg: string; text: string; icon: React.ComponentType<{ className?: string }> }> = {
+  scheduled: { label: 'Scheduled', bg: 'bg-gray-100', text: 'text-gray-700', icon: ChevronDown },
+  in_progress: { label: 'In Progress', bg: 'bg-blue-100', text: 'text-blue-700', icon: PlayCircle },
+  completed: { label: 'Completed', bg: 'bg-emerald-100', text: 'text-emerald-700', icon: CheckCircle },
+  cancelled: { label: 'Cancelled', bg: 'bg-red-100', text: 'text-red-600', icon: XCircle },
+};
+
+const STATUS_TRANSITIONS: Record<VisitStatus, VisitStatus[]> = {
+  scheduled: ['in_progress', 'cancelled'],
+  in_progress: ['completed', 'cancelled'],
+  completed: [],
+  cancelled: ['scheduled'],
+};
+
 export function VisitPage() {
   const { visitId } = useParams<{ visitId: string }>();
   const navigate = useNavigate();
@@ -32,9 +48,11 @@ export function VisitPage() {
   const { data: payments, isLoading: paymentsLoading } = usePayments(invoice?.id);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
   const { generatePDF } = useGeneratePDF();
   const { clinicId, clinics } = useClinicStore();
   const selectedClinic = clinics.find(c => c.id === clinicId);
+  const updateVisitMutation = useUpdateVisit();
 
   if (isLoading) {
     return (
@@ -161,18 +179,54 @@ export function VisitPage() {
               <Download className="size-4 mr-2" />
               Download Visit Summary
             </Button>
-            <div
-              className={`px-3 py-1 rounded-full text-sm font-medium ${
-                visit.status === 'completed'
-                  ? 'bg-green-100 text-green-700'
-                  : visit.status === 'in_progress'
-                  ? 'bg-blue-100 text-blue-700'
-                  : visit.status === 'cancelled'
-                  ? 'bg-red-100 text-red-700'
-                  : 'bg-gray-100 text-gray-700'
-              }`}
-            >
-              {visit.status.replace('_', ' ').toUpperCase()}
+            <div className="relative">
+              {(() => {
+                const currentStatus = visit.status as VisitStatus;
+                const config = STATUS_CONFIG[currentStatus];
+                const StatusIcon = config.icon;
+                const transitions = STATUS_TRANSITIONS[currentStatus];
+                const canChange = transitions.length > 0;
+                return (
+                  <>
+                    <button
+                      onClick={() => canChange && setStatusDropdownOpen((v) => !v)}
+                      disabled={updateVisitMutation.isPending}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${config.bg} ${config.text} ${canChange ? 'cursor-pointer hover:opacity-80 border-transparent' : 'cursor-default border-transparent'}`}
+                    >
+                      <StatusIcon className="size-3.5" />
+                      {config.label}
+                      {canChange && <ChevronDown className="size-3 ml-0.5 opacity-60" />}
+                    </button>
+                    {statusDropdownOpen && canChange && (
+                      <>
+                        <div
+                          className="fixed inset-0 z-10"
+                          onClick={() => setStatusDropdownOpen(false)}
+                        />
+                        <div className="absolute right-0 top-full mt-1 z-20 bg-white border border-gray-200 rounded-xl shadow-lg py-1 min-w-[160px]">
+                          {transitions.map((nextStatus) => {
+                            const nextConfig = STATUS_CONFIG[nextStatus];
+                            const NextIcon = nextConfig.icon;
+                            return (
+                              <button
+                                key={nextStatus}
+                                onClick={() => {
+                                  setStatusDropdownOpen(false);
+                                  updateVisitMutation.mutate({ visitId: visit.id, payload: { status: nextStatus } });
+                                }}
+                                className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 transition-colors"
+                              >
+                                <NextIcon className={`size-4 ${nextConfig.text}`} />
+                                <span className={nextConfig.text}>{nextConfig.label}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </>
+                    )}
+                  </>
+                );
+              })()}
             </div>
           </>
         }
