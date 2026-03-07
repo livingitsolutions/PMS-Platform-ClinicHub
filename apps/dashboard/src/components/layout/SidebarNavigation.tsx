@@ -1,18 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import {
-  LayoutDashboard,
-  Users,
-  Calendar,
-  FileText,
-  DollarSign,
-  Stethoscope,
-  UserCog,
-  UserRound,
-  BarChart2,
-  Settings,
-  Bell,
-  Database,
-} from 'lucide-react';
+import { LayoutDashboard, Users, Calendar, FileText, DollarSign, Stethoscope, UserCog, UserRound, ChartBar as BarChart2, Settings, Bell, Database } from 'lucide-react';
 import { useClinicStore } from '@/store/clinic-store';
 import { usePermissions } from '@/hooks/usePermissions';
 
