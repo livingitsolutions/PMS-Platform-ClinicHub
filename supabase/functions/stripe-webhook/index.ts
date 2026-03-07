@@ -8,6 +8,29 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey, stripe-signature",
 };
 
+async function syncClinic(
+  supabaseAdmin: ReturnType<typeof createClient>,
+  clinicId: string,
+  fields: { plan?: string; subscription_status?: string }
+) {
+  await supabaseAdmin
+    .from("clinics")
+    .update({ ...fields, updated_at: new Date().toISOString() })
+    .eq("id", clinicId);
+}
+
+async function getClinicIdBySubscription(
+  supabaseAdmin: ReturnType<typeof createClient>,
+  stripeSubscriptionId: string
+): Promise<string | null> {
+  const { data } = await supabaseAdmin
+    .from("subscriptions")
+    .select("clinic_id")
+    .eq("stripe_subscription_id", stripeSubscriptionId)
+    .maybeSingle();
+  return data?.clinic_id ?? null;
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, {
@@ -80,6 +103,8 @@ Deno.serve(async (req: Request) => {
               updated_at: new Date().toISOString(),
             })
             .eq("clinic_id", clinicId);
+
+          await syncClinic(supabaseAdmin, clinicId, { subscription_status: "active" });
         }
         break;
       }
@@ -100,6 +125,11 @@ Deno.serve(async (req: Request) => {
               updated_at: new Date().toISOString(),
             })
             .eq("stripe_subscription_id", subscriptionId);
+
+          const clinicId = await getClinicIdBySubscription(supabaseAdmin, subscriptionId);
+          if (clinicId) {
+            await syncClinic(supabaseAdmin, clinicId, { subscription_status: "active" });
+          }
         }
         break;
       }
@@ -120,12 +150,19 @@ Deno.serve(async (req: Request) => {
               updated_at: new Date().toISOString(),
             })
             .eq("stripe_subscription_id", subscriptionId);
+
+          const clinicId = await getClinicIdBySubscription(supabaseAdmin, subscriptionId);
+          if (clinicId) {
+            await syncClinic(supabaseAdmin, clinicId, { subscription_status: "past_due" });
+          }
         }
         break;
       }
 
       case "customer.subscription.deleted": {
         const subscription = event.data.object as Stripe.Subscription;
+
+        const clinicId = await getClinicIdBySubscription(supabaseAdmin, subscription.id);
 
         await supabaseAdmin
           .from("subscriptions")
@@ -134,6 +171,10 @@ Deno.serve(async (req: Request) => {
             updated_at: new Date().toISOString(),
           })
           .eq("stripe_subscription_id", subscription.id);
+
+        if (clinicId) {
+          await syncClinic(supabaseAdmin, clinicId, { subscription_status: "canceled" });
+        }
         break;
       }
 
@@ -149,6 +190,8 @@ Deno.serve(async (req: Request) => {
 
         const plan = priceId ? priceToplan[priceId] : undefined;
 
+        const clinicId = await getClinicIdBySubscription(supabaseAdmin, subscription.id);
+
         await supabaseAdmin
           .from("subscriptions")
           .update({
@@ -158,6 +201,13 @@ Deno.serve(async (req: Request) => {
             updated_at: new Date().toISOString(),
           })
           .eq("stripe_subscription_id", subscription.id);
+
+        if (clinicId) {
+          await syncClinic(supabaseAdmin, clinicId, {
+            subscription_status: subscription.status,
+            ...(plan ? { plan } : {}),
+          });
+        }
         break;
       }
 
