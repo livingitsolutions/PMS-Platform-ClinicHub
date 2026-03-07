@@ -13,7 +13,6 @@ export function useUserClinics() {
   const user = useAuthStore((s) => s.user)
 
   const clinics = useClinicStore((s) => s.clinics)
-  const clinicId = useClinicStore((s) => s.clinicId)
   const setClinicMemberships = useClinicStore((s) => s.setClinicMemberships)
   const setClinicId = useClinicStore((s) => s.setClinicId)
 
@@ -44,13 +43,13 @@ export function useUserClinics() {
 
     setClinicMemberships(memberships)
 
-    // validate persisted clinic
-    if (!clinicId || !memberships.find((m) => m.clinic.id === clinicId)) {
+    const currentClinicId = useClinicStore.getState().clinicId
+    if (!currentClinicId || !memberships.find((m) => m.clinic.id === currentClinicId)) {
       if (memberships.length > 0) {
         setClinicId(memberships[0].clinic.id)
       }
     }
-  }, [data, clinicId, setClinicMemberships, setClinicId])
+  }, [data, setClinicMemberships, setClinicId])
 
   return {
     clinics,
