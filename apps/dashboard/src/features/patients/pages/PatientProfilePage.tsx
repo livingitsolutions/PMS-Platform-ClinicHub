@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/table';
 import { DashboardLayout, PageHeader } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, PlusCircle } from 'lucide-react';
+import { ArrowLeft, CirclePlus as PlusCircle } from 'lucide-react';
 import { CreateVisitForPatientDialog } from '@/features/visits/components/CreateVisitForPatientDialog';
 
 interface Visit {

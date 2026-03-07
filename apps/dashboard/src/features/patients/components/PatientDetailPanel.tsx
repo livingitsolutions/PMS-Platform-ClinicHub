@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
-import { Calendar, Stethoscope, FileText, ArrowRight, ClipboardList, Activity, PlusCircle } from 'lucide-react';
+import { Calendar, Stethoscope, FileText, ArrowRight, ClipboardList, Activity, CirclePlus as PlusCircle } from 'lucide-react';
 import type { Patient } from '../api/patientsApi';
 import { Button } from '@/components/ui/button';
 import { formatCurrency } from '@/lib/currency';
