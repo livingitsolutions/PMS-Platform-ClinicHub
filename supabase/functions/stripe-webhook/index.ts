@@ -143,6 +143,7 @@ Deno.serve(async (req: Request) => {
           .update({
             status: subscription.status,
             ...(plan ? { plan } : {}),
+            current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
             updated_at: new Date().toISOString(),
           })
           .eq("stripe_subscription_id", subscription.id);
