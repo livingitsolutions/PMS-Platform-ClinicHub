@@ -109,5 +109,22 @@ export async function createBackup(payload: CreateBackupPayload): Promise<Backup
 
   if (error) throw error;
 
-  return data as Backup;
+  const backup = data as Backup;
+
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  const { data: sessionData } = await supabase.auth.getSession();
+  const token = sessionData?.session?.access_token || supabaseAnonKey;
+
+  fetch(`${supabaseUrl}/functions/v1/perform-backup`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+      Apikey: supabaseAnonKey,
+    },
+    body: JSON.stringify({ backup_id: backup.id, clinic_id: backup.clinic_id }),
+  }).catch((err) => console.error('Backup edge function error:', err));
+
+  return backup;
 }

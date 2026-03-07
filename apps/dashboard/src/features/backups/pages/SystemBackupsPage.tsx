@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -21,6 +22,27 @@ export function SystemBackupsPage() {
   const { data: stats } = useBackupStats();
   const createBackupMutation = useCreateBackup();
   const currentClinic = clinics.find((c) => c.id === clinicId);
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const hasInProgress = backups.some(
+    (b) => b.backup_status === 'pending' || b.backup_status === 'in_progress'
+  );
+
+  useEffect(() => {
+    if (hasInProgress) {
+      pollingRef.current = setInterval(() => {
+        refetch();
+      }, 3000);
+    } else {
+      if (pollingRef.current) {
+        clearInterval(pollingRef.current);
+        pollingRef.current = null;
+      }
+    }
+    return () => {
+      if (pollingRef.current) clearInterval(pollingRef.current);
+    };
+  }, [hasInProgress, refetch]);
 
   const handleCreateBackup = async () => {
     if (!clinicId) return;
