@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Stethoscope, LogOut, Search } from 'lucide-react';
 import { useAuthStore } from '@/store/auth-store';
 import { useClinicStore } from '@/store/clinic-store';
@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 
 export function TopNavbar() {
   const logout = useAuthStore((s) => s.logout);
+  const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
   const clinicId = useClinicStore((s) => s.clinicId);
   const { clinics } = useClinicStore();
@@ -59,7 +60,7 @@ export function TopNavbar() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => logout()}
+            onClick={async () => { await logout(); navigate('/login'); }}
             className="text-gray-500 hover:text-gray-900 px-2"
           >
             <LogOut className="size-4" />

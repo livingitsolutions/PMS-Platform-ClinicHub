@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/auth-store';
 import { useClinicStore } from '@/store/clinic-store';
 import { ClinicSelector } from '@/components/clinic/ClinicSelector';
@@ -14,6 +14,7 @@ interface AppLayoutProps {
 
 export function AppLayout({ children }: AppLayoutProps) {
   const location = useLocation();
+  const navigate = useNavigate();
   const logout = useAuthStore((s) => s.logout);
   const clinicId = useClinicStore((s) => s.clinicId);
 
@@ -86,7 +87,7 @@ export function AppLayout({ children }: AppLayoutProps) {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => logout()}
+                onClick={async () => { await logout(); navigate('/login'); }}
                 className="text-gray-700 hover:text-gray-900"
               >
                 <LogOut className="size-4 mr-2" />
