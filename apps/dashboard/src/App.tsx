@@ -24,7 +24,7 @@ import { LandingPage } from '@/features/marketing/pages/LandingPage';
 import { PricingPage } from '@/features/marketing/pages/PricingPage';
 import { SignupPage } from '@/features/marketing/pages/SignupPage';
 import { DemoPage } from '@/features/marketing/pages/DemoPage';
-import { DocsPage } from '@/features/marketing/pages/DocsPage';
+import { DocsPage } from '@/features/docs/pages/DocsPage';
 import { StaffPage } from '@/features/staff/pages/StaffPage';
 import { ReportsPage } from '@/features/reports/pages/ReportsPage';
 import { useAuthStore } from '@/store/auth-store';
