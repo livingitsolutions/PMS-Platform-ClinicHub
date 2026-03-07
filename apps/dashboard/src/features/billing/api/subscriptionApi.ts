@@ -17,6 +17,9 @@ export async function getClinicSubscription(clinicId: string): Promise<Subscript
     .from('subscriptions')
     .select('*')
     .eq('clinic_id', clinicId)
+    .in('status', ['active', 'trialing'])
+    .order('created_at', { ascending: false })
+    .limit(1)
     .maybeSingle();
 
   if (error) throw error;
