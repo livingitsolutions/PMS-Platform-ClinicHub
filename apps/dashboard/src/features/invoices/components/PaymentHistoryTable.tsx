@@ -7,11 +7,13 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { formatCurrency } from '@/lib/currency';
 import type { Payment } from '../api/invoicesApi';
 
 interface PaymentHistoryTableProps {
   payments: Payment[];
   isLoading?: boolean;
+  currencyCode?: string;
 }
 
 const methodLabels: Record<Payment['method'], string> = {
@@ -21,7 +23,7 @@ const methodLabels: Record<Payment['method'], string> = {
   other: 'Other',
 };
 
-export function PaymentHistoryTable({ payments, isLoading }: PaymentHistoryTableProps) {
+export function PaymentHistoryTable({ payments, isLoading, currencyCode = 'PHP' }: PaymentHistoryTableProps) {
   if (isLoading) {
     return (
       <Card>
@@ -81,7 +83,7 @@ export function PaymentHistoryTable({ payments, isLoading }: PaymentHistoryTable
                   </span>
                 </TableCell>
                 <TableCell className="text-right font-semibold text-green-600">
-                  ${Number(payment.amount).toFixed(2)}
+                  {formatCurrency(Number(payment.amount), currencyCode)}
                 </TableCell>
                 <TableCell className="text-sm text-gray-600">
                   {payment.notes || '-'}

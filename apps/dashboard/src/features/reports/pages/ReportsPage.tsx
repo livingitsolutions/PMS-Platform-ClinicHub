@@ -8,7 +8,9 @@ import { QueryErrorAlert } from '@/components/system/ErrorAlert';
 import { ExportCSVButton } from '@/components/system/ExportCSVButton';
 
 export function ReportsPage() {
-  const clinicId = useClinicStore((s) => s.clinicId);
+  const { clinicId, clinics } = useClinicStore();
+  const selectedClinic = clinics.find((c) => c.id === clinicId);
+  const currencyCode = selectedClinic?.currency_code ?? 'PHP';
   const { data, isLoading, error, refetch } = useDashboardStats(clinicId);
 
   if (!clinicId) {
@@ -52,16 +54,19 @@ export function ReportsPage() {
             <RevenueReport
               data={data?.monthlyRevenue || []}
               isLoading={isLoading}
+              currencyCode={currencyCode}
             />
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <ProviderPerformanceReport
                 providers={data?.topProviders || []}
                 isLoading={isLoading}
+                currencyCode={currencyCode}
               />
               <ProcedureReport
                 procedures={data?.topProcedures || []}
                 isLoading={isLoading}
+                currencyCode={currencyCode}
               />
             </div>
           </div>

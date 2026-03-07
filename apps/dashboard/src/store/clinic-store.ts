@@ -7,6 +7,8 @@ export interface Clinic {
   address: string | null;
   phone: string | null;
   email: string | null;
+  currency_code: string;
+  currency_symbol: string;
   created_at: string;
   updated_at: string;
 }

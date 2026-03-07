@@ -274,7 +274,7 @@ export function VisitPage() {
 
         <div className="grid gap-6 md:grid-cols-2">
           <div>
-            <InvoiceSummary invoice={invoice} />
+            <InvoiceSummary invoice={invoice} currencyCode={selectedClinic?.currency_code} />
             <div className="mt-4 space-y-2">
               <Button
                 onClick={() => setPaymentDialogOpen(true)}
@@ -304,6 +304,7 @@ export function VisitPage() {
             <PaymentHistoryTable
               payments={payments || []}
               isLoading={paymentsLoading}
+              currencyCode={selectedClinic?.currency_code}
             />
           </div>
         </div>

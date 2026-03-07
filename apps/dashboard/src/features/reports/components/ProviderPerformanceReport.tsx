@@ -8,16 +8,19 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
+import { formatCurrency } from '@/lib/currency';
 import type { TopProvider } from '@/features/dashboard/api/dashboardApi';
 
 interface ProviderPerformanceReportProps {
   providers: TopProvider[];
   isLoading: boolean;
+  currencyCode?: string;
 }
 
 export function ProviderPerformanceReport({
   providers,
   isLoading,
+  currencyCode = 'PHP',
 }: ProviderPerformanceReportProps) {
   const chartData = providers.map((p) => ({
     name: p.provider_name,
@@ -44,9 +47,7 @@ export function ProviderPerformanceReport({
           <div className="rounded-lg bg-gray-50 p-4">
             <p className="text-xs text-muted-foreground uppercase tracking-wide">Total Revenue</p>
             <p className="mt-1 text-2xl font-bold text-gray-900">
-              {isLoading
-                ? '—'
-                : `$${totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2 })}`}
+              {isLoading ? '—' : formatCurrency(totalRevenue, currencyCode)}
             </p>
           </div>
         </div>
@@ -66,7 +67,7 @@ export function ProviderPerformanceReport({
               <XAxis
                 type="number"
                 tick={{ fontSize: 11 }}
-                tickFormatter={(v) => `$${v}`}
+                tickFormatter={(v) => formatCurrency(v, currencyCode)}
               />
               <YAxis
                 type="category"
@@ -78,7 +79,7 @@ export function ProviderPerformanceReport({
                 formatter={(value: number | undefined, name: string | undefined) => {
                   const v = value ?? 0;
                   return name === 'revenue'
-                    ? [`$${v.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, 'Revenue']
+                    ? [formatCurrency(v, currencyCode), 'Revenue']
                     : [v, 'Visits'];
                 }}
               />
@@ -98,7 +99,7 @@ export function ProviderPerformanceReport({
                   </p>
                 </div>
                 <p className="font-semibold text-sm">
-                  ${provider.total_revenue.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  {formatCurrency(provider.total_revenue, currencyCode)}
                 </p>
               </div>
             ))}

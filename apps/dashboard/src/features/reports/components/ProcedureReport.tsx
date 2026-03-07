@@ -8,14 +8,16 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
+import { formatCurrency } from '@/lib/currency';
 import type { TopProcedure } from '@/features/dashboard/api/dashboardApi';
 
 interface ProcedureReportProps {
   procedures: TopProcedure[];
   isLoading: boolean;
+  currencyCode?: string;
 }
 
-export function ProcedureReport({ procedures, isLoading }: ProcedureReportProps) {
+export function ProcedureReport({ procedures, isLoading, currencyCode = 'PHP' }: ProcedureReportProps) {
   const chartData = procedures.map((p) => ({
     name: p.procedure_name,
     count: p.count,
@@ -41,9 +43,7 @@ export function ProcedureReport({ procedures, isLoading }: ProcedureReportProps)
           <div className="rounded-lg bg-gray-50 p-4">
             <p className="text-xs text-muted-foreground uppercase tracking-wide">Revenue Generated</p>
             <p className="mt-1 text-2xl font-bold text-gray-900">
-              {isLoading
-                ? '—'
-                : `$${totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2 })}`}
+              {isLoading ? '—' : formatCurrency(totalRevenue, currencyCode)}
             </p>
           </div>
         </div>
@@ -70,7 +70,7 @@ export function ProcedureReport({ procedures, isLoading }: ProcedureReportProps)
               <Tooltip
                 formatter={(value: number | undefined, name: string | undefined) => {
                   const v = value ?? 0;
-                  return name === 'count' ? [v, 'Times performed'] : [v, 'Revenue'];
+                  return name === 'count' ? [v, 'Times performed'] : [formatCurrency(v, currencyCode), 'Revenue'];
                 }}
               />
               <Bar dataKey="count" fill="#2563eb" radius={[0, 4, 4, 0]} />
@@ -96,7 +96,7 @@ export function ProcedureReport({ procedures, isLoading }: ProcedureReportProps)
                     </div>
                     <div className="text-right">
                       <p className="font-semibold text-sm">
-                        ${procedure.total_revenue.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                        {formatCurrency(procedure.total_revenue, currencyCode)}
                       </p>
                       <p className="text-xs text-muted-foreground">{share.toFixed(1)}% of revenue</p>
                     </div>

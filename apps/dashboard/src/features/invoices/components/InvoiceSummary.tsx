@@ -1,11 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { formatCurrency } from '@/lib/currency';
 import type { Invoice } from '../api/invoicesApi';
 
 interface InvoiceSummaryProps {
   invoice: Invoice | null | undefined;
+  currencyCode?: string;
 }
 
-export function InvoiceSummary({ invoice }: InvoiceSummaryProps) {
+export function InvoiceSummary({ invoice, currencyCode = 'PHP' }: InvoiceSummaryProps) {
   if (!invoice) {
     return (
       <Card>
@@ -49,19 +51,19 @@ export function InvoiceSummary({ invoice }: InvoiceSummaryProps) {
           <div className="flex justify-between items-center border-b pb-2">
             <span className="text-sm font-medium text-gray-600">Total</span>
             <span className="text-lg font-semibold">
-              ${Number(invoice.total_amount).toFixed(2)}
+              {formatCurrency(Number(invoice.total_amount), currencyCode)}
             </span>
           </div>
           <div className="flex justify-between items-center border-b pb-2">
             <span className="text-sm font-medium text-gray-600">Paid</span>
             <span className="text-lg font-semibold text-green-600">
-              ${Number(invoice.amount_paid).toFixed(2)}
+              {formatCurrency(Number(invoice.amount_paid), currencyCode)}
             </span>
           </div>
           <div className="flex justify-between items-center pt-2">
             <span className="text-sm font-medium text-gray-600">Balance</span>
             <span className={`text-xl font-bold ${balance > 0 ? 'text-red-600' : 'text-green-600'}`}>
-              ${balance.toFixed(2)}
+              {formatCurrency(balance, currencyCode)}
             </span>
           </div>
         </div>

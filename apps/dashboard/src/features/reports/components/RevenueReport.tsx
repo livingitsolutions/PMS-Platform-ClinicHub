@@ -8,14 +8,16 @@ import {
   Area,
   AreaChart,
 } from 'recharts';
+import { formatCurrency } from '@/lib/currency';
 import type { MonthlyRevenue } from '@/features/dashboard/api/dashboardApi';
 
 interface RevenueReportProps {
   data: MonthlyRevenue[];
   isLoading: boolean;
+  currencyCode?: string;
 }
 
-export function RevenueReport({ data, isLoading }: RevenueReportProps) {
+export function RevenueReport({ data, isLoading, currencyCode = 'PHP' }: RevenueReportProps) {
   const formattedData = data.map((item) => ({
     date: new Date(item.date).toLocaleDateString('en-US', {
       month: 'short',
@@ -41,17 +43,13 @@ export function RevenueReport({ data, isLoading }: RevenueReportProps) {
           <div className="rounded-lg bg-gray-50 p-4">
             <p className="text-xs text-muted-foreground uppercase tracking-wide">Total</p>
             <p className="mt-1 text-2xl font-bold text-gray-900">
-              {isLoading
-                ? '—'
-                : `$${totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2 })}`}
+              {isLoading ? '—' : formatCurrency(totalRevenue, currencyCode)}
             </p>
           </div>
           <div className="rounded-lg bg-gray-50 p-4">
             <p className="text-xs text-muted-foreground uppercase tracking-wide">Avg / Day</p>
             <p className="mt-1 text-2xl font-bold text-gray-900">
-              {isLoading
-                ? '—'
-                : `$${avgDaily.toLocaleString('en-US', { minimumFractionDigits: 2 })}`}
+              {isLoading ? '—' : formatCurrency(avgDaily, currencyCode)}
             </p>
           </div>
           <div className="rounded-lg bg-gray-50 p-4">
@@ -60,7 +58,7 @@ export function RevenueReport({ data, isLoading }: RevenueReportProps) {
               {isLoading
                 ? '—'
                 : maxDay.revenue > 0
-                  ? `$${maxDay.revenue.toLocaleString('en-US', { minimumFractionDigits: 2 })}`
+                  ? formatCurrency(maxDay.revenue, currencyCode)
                   : '—'}
             </p>
             {!isLoading && maxDay.date && (
@@ -90,12 +88,15 @@ export function RevenueReport({ data, isLoading }: RevenueReportProps) {
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis dataKey="date" tick={{ fontSize: 11 }} interval="preserveStartEnd" />
-              <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `$${v}`} />
+              <YAxis
+                tick={{ fontSize: 11 }}
+                tickFormatter={(v) => formatCurrency(v, currencyCode)}
+              />
               <Tooltip
                 formatter={(value: number | undefined) =>
                   value !== undefined
-                    ? `$${value.toLocaleString('en-US', { minimumFractionDigits: 2 })}`
-                    : '$0.00'
+                    ? formatCurrency(value, currencyCode)
+                    : formatCurrency(0, currencyCode)
                 }
               />
               <Area

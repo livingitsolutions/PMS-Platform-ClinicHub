@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useClinicStore } from '@/store/clinic-store';
 import { usePermissions } from '@/hooks/usePermissions';
+import { formatCurrency } from '@/lib/currency';
 import { Pagination } from '@/components/ui/pagination';
 import {
   Card,
@@ -80,13 +81,6 @@ async function getInvoices(
   };
 }
 
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  }).format(amount);
-}
-
 function formatDate(dateString: string): string {
   return new Date(dateString).toLocaleDateString('en-US', {
     year: 'numeric',
@@ -111,7 +105,9 @@ function getStatusBadgeColor(status: string): string {
 }
 
 export function InvoicesPage() {
-  const clinicId = useClinicStore((state) => state.clinicId);
+  const { clinicId, clinics } = useClinicStore();
+  const selectedClinic = clinics.find((c) => c.id === clinicId);
+  const currencyCode = selectedClinic?.currency_code ?? 'PHP';
   const { canEditBilling } = usePermissions();
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 20;
@@ -201,10 +197,10 @@ export function InvoicesPage() {
                       {invoice.visits ? formatDate(invoice.visits.visit_date) : 'N/A'}
                     </TableCell>
                     <TableCell>
-                      {formatCurrency(invoice.total_amount)}
+                      {formatCurrency(invoice.total_amount, currencyCode)}
                     </TableCell>
                     <TableCell>
-                      {formatCurrency(invoice.amount_paid)}
+                      {formatCurrency(invoice.amount_paid, currencyCode)}
                     </TableCell>
                     <TableCell>
                       <span
