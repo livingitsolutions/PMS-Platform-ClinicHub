@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Search, Plus, MoreHorizontal, User } from 'lucide-react';
+import { Search, Plus, MoveHorizontal as MoreHorizontal, User } from 'lucide-react';
 import type { Patient } from '../api/patientsApi';
 import { Button } from '@/components/ui/button';
 
