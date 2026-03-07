@@ -33,6 +33,7 @@ export function useCreatePayment() {
       queryClient.invalidateQueries({ queryKey: ['payments', variables.invoice_id] });
       queryClient.invalidateQueries({ queryKey: ['invoice', variables.visitId] });
       queryClient.invalidateQueries({ queryKey: ['visits'] });
+      queryClient.invalidateQueries({ queryKey: ['invoices'] });
     },
   });
 }

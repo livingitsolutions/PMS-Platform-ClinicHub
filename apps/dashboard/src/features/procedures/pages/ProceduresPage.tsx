@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useClinicStore } from '@/store/clinic-store';
+import { formatCurrency } from '@/lib/currency';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Pagination } from '@/components/ui/pagination';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -25,7 +26,9 @@ interface Procedure {
 }
 
 export function ProceduresPage() {
-  const clinicId = useClinicStore((state) => state.clinicId);
+  const { clinicId, clinics } = useClinicStore();
+  const selectedClinic = clinics.find((c) => c.id === clinicId);
+  const currencyCode = selectedClinic?.currency_code ?? 'PHP';
   const [dialogOpen, setDialogOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 20;
@@ -63,18 +66,10 @@ export function ProceduresPage() {
       };
     },
     enabled: !!clinicId,
-    staleTime: 1000 * 60 * 2,
   });
 
   const procedures = data?.data || [];
   const totalCount = data?.totalCount || 0;
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
-  };
 
   if (!clinicId) {
     return (
@@ -150,7 +145,7 @@ export function ProceduresPage() {
                       )}
                     </TableCell>
                     <TableCell className="text-right font-medium">
-                      {formatCurrency(procedure.base_cost)}
+                      {formatCurrency(procedure.base_cost, currencyCode)}
                     </TableCell>
                   </TableRow>
                 ))}

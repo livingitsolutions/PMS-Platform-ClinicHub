@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Table,
   TableBody,
@@ -9,6 +10,7 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import type { Patient } from '../api/patientsApi';
+import { deletePatient } from '../api/patientsApi';
 import { usePermissions } from '@/hooks/usePermissions';
 import { EditPatientDialog } from './EditPatientDialog';
 import { CreditCard as Edit } from 'lucide-react';
@@ -22,6 +24,20 @@ interface PatientsTableProps {
 export function PatientsTable({ patients, isLoading, clinicId }: PatientsTableProps) {
   const { canDeletePatients } = usePermissions();
   const [editingPatient, setEditingPatient] = useState<Patient | null>(null);
+  const queryClient = useQueryClient();
+
+  const deleteMutation = useMutation({
+    mutationFn: (patientId: string) => deletePatient(patientId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['patients', clinicId] });
+    },
+  });
+
+  const handleDelete = (patient: Patient) => {
+    if (confirm(`Are you sure you want to delete ${patient.first_name} ${patient.last_name}?`)) {
+      deleteMutation.mutate(patient.id);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -84,7 +100,12 @@ export function PatientsTable({ patients, isLoading, clinicId }: PatientsTablePr
                       Edit
                     </Button>
                     {canDeletePatients && (
-                      <Button variant="destructive" size="sm">
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleDelete(patient)}
+                        disabled={deleteMutation.isPending}
+                      >
                         Delete
                       </Button>
                     )}

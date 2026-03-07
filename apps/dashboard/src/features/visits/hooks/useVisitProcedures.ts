@@ -26,6 +26,7 @@ export function useCreateVisitProcedure() {
       queryClient.invalidateQueries({
         queryKey: ['visit-procedures', variables.visit_id],
       });
+      queryClient.invalidateQueries({ queryKey: ['invoice', variables.visit_id] });
     },
   });
 }
@@ -40,6 +41,7 @@ export function useUpdateVisitProcedure() {
       queryClient.invalidateQueries({
         queryKey: ['visit-procedures', data.visit_id],
       });
+      queryClient.invalidateQueries({ queryKey: ['invoice', data.visit_id] });
     },
   });
 }
@@ -54,6 +56,7 @@ export function useDeleteVisitProcedure() {
       queryClient.invalidateQueries({
         queryKey: ['visit-procedures', variables.visitId],
       });
+      queryClient.invalidateQueries({ queryKey: ['invoice', variables.visitId] });
     },
   });
 }

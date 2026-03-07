@@ -17,6 +17,8 @@ import {
   useDeleteVisitProcedure,
 } from '../hooks/useVisitProcedures';
 import { useProcedures } from '../hooks/useProcedures';
+import { formatCurrency } from '@/lib/currency';
+import { useClinicStore } from '@/store/clinic-store';
 
 interface VisitProceduresTableProps {
   visitId: string;
@@ -26,6 +28,9 @@ interface VisitProceduresTableProps {
 export function VisitProceduresTable({ visitId, clinicId }: VisitProceduresTableProps) {
   const { data: visitProcedures = [], isLoading } = useVisitProcedures(visitId);
   const { data: allProcedures = [] } = useProcedures(clinicId);
+  const { clinics, clinicId: currentClinicId } = useClinicStore();
+  const selectedClinic = clinics.find((c) => c.id === currentClinicId);
+  const currencyCode = selectedClinic?.currency_code ?? 'PHP';
   const updateMutation = useUpdateVisitProcedure();
   const deleteMutation = useDeleteVisitProcedure();
 
@@ -140,10 +145,10 @@ export function VisitProceduresTable({ visitId, clinicId }: VisitProceduresTable
                 )}
               </TableCell>
               <TableCell className="text-right">
-                ${vp.price.toFixed(2)}
+                {formatCurrency(vp.price, currencyCode)}
               </TableCell>
               <TableCell className="text-right font-medium">
-                ${subtotal.toFixed(2)}
+                {formatCurrency(subtotal, currencyCode)}
               </TableCell>
               <TableCell className="text-right">
                 {!isEditing && (
@@ -176,7 +181,7 @@ export function VisitProceduresTable({ visitId, clinicId }: VisitProceduresTable
             Total Cost
           </TableCell>
           <TableCell className="text-right font-bold text-lg">
-            ${totalCost.toFixed(2)}
+            {formatCurrency(totalCost, currencyCode)}
           </TableCell>
           <TableCell />
         </TableRow>

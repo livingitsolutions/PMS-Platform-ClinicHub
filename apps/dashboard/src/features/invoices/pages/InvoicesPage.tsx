@@ -116,7 +116,6 @@ export function InvoicesPage() {
     queryKey: ['invoices', clinicId, currentPage],
     queryFn: () => getInvoices(clinicId!, currentPage, pageSize),
     enabled: !!clinicId,
-    staleTime: 1000 * 60 * 2,
   });
 
   const invoices = data?.data || [];

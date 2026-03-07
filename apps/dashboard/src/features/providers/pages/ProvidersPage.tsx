@@ -28,7 +28,6 @@ export function ProvidersPage() {
     queryKey: ['providers', clinicId, currentPage],
     queryFn: () => getProviders(clinicId!, currentPage, pageSize),
     enabled: !!clinicId,
-    staleTime: 1000 * 60 * 2,
   });
 
   const providers = data?.data || [];

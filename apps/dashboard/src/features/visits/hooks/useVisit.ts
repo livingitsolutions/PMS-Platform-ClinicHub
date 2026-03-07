@@ -19,6 +19,7 @@ export function useUpdateVisit() {
       queryClient.invalidateQueries({
         queryKey: ['visit', data.id],
       });
+      queryClient.invalidateQueries({ queryKey: ['visits'] });
     },
   });
 }

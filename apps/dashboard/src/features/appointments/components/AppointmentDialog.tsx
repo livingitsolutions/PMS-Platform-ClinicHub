@@ -51,6 +51,7 @@ export function AppointmentDialog({
 }: AppointmentDialogProps) {
   const createAppointment = useCreateAppointment();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const form = useForm<FormData>({
     defaultValues: {
@@ -63,6 +64,7 @@ export function AppointmentDialog({
     if (!selectedSlot) return;
 
     setIsSubmitting(true);
+    setSubmitError(null);
     try {
       const payload: CreateAppointmentPayload = {
         patient_id: data.patient_id,
@@ -77,6 +79,7 @@ export function AppointmentDialog({
       onOpenChange(false);
     } catch (error) {
       console.error('Failed to create appointment:', error);
+      setSubmitError('Failed to schedule appointment. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -138,6 +141,10 @@ export function AppointmentDialog({
                   {new Date(selectedSlot.end).toLocaleTimeString()}
                 </p>
               </div>
+            )}
+
+            {submitError && (
+              <p className="text-sm text-destructive">{submitError}</p>
             )}
 
             <DialogFooter>
