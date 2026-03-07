@@ -31,6 +31,39 @@ async function getClinicIdBySubscription(
   return data?.clinic_id ?? null;
 }
 
+async function upsertSubscriptionInvoice(
+  supabaseAdmin: ReturnType<typeof createClient>,
+  invoice: Stripe.Invoice,
+  clinicId: string
+) {
+  const subscriptionId =
+    typeof invoice.subscription === "string"
+      ? invoice.subscription
+      : invoice.subscription?.id ?? null;
+
+  const paidAt =
+    invoice.status_transitions?.paid_at
+      ? new Date(invoice.status_transitions.paid_at * 1000).toISOString()
+      : null;
+
+  await supabaseAdmin
+    .from("subscription_invoices")
+    .upsert(
+      {
+        clinic_id: clinicId,
+        stripe_invoice_id: invoice.id,
+        stripe_subscription_id: subscriptionId,
+        amount_due: (invoice.amount_due ?? 0) / 100,
+        amount_paid: (invoice.amount_paid ?? 0) / 100,
+        currency: invoice.currency ?? "usd",
+        status: invoice.status ?? "open",
+        invoice_pdf_url: invoice.invoice_pdf ?? null,
+        paid_at: paidAt,
+      },
+      { onConflict: "stripe_invoice_id" }
+    );
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, {
@@ -109,6 +142,24 @@ Deno.serve(async (req: Request) => {
         break;
       }
 
+      case "invoice.created": {
+        const invoice = event.data.object as Stripe.Invoice;
+
+        if (invoice.subscription) {
+          const subscriptionId =
+            typeof invoice.subscription === "string"
+              ? invoice.subscription
+              : invoice.subscription.id;
+
+          const clinicId = await getClinicIdBySubscription(supabaseAdmin, subscriptionId);
+          if (clinicId) {
+            await upsertSubscriptionInvoice(supabaseAdmin, invoice, clinicId);
+          }
+        }
+        break;
+      }
+
+      case "invoice.payment_succeeded":
       case "invoice.paid": {
         const invoice = event.data.object as Stripe.Invoice;
 
@@ -129,6 +180,7 @@ Deno.serve(async (req: Request) => {
           const clinicId = await getClinicIdBySubscription(supabaseAdmin, subscriptionId);
           if (clinicId) {
             await syncClinic(supabaseAdmin, clinicId, { subscription_status: "active" });
+            await upsertSubscriptionInvoice(supabaseAdmin, invoice, clinicId);
           }
         }
         break;
@@ -154,6 +206,7 @@ Deno.serve(async (req: Request) => {
           const clinicId = await getClinicIdBySubscription(supabaseAdmin, subscriptionId);
           if (clinicId) {
             await syncClinic(supabaseAdmin, clinicId, { subscription_status: "past_due" });
+            await upsertSubscriptionInvoice(supabaseAdmin, invoice, clinicId);
           }
         }
         break;

@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useSubscription } from '@/features/billing/hooks/useSubscription';
 import { BillingPortalButton } from '@/features/billing/components/BillingPortalButton';
+import { SubscriptionInvoicesTable } from '@/features/billing/components/SubscriptionInvoicesTable';
 import { DashboardLayout, PageHeader } from '@/components/layout/DashboardLayout';
 
 interface Clinic {
@@ -191,6 +192,18 @@ export function SettingsPage() {
               </div>
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle>Billing History</CardTitle>
+          <CardDescription>
+            View past subscription invoices and download receipts
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <SubscriptionInvoicesTable clinicId={clinicId} />
         </CardContent>
       </Card>
     </DashboardLayout>
