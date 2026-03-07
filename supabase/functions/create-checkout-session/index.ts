@@ -15,6 +15,46 @@ interface CheckoutRequest {
   cancelUrl: string;
 }
 
+const PLAN_PRICES: Record<string, { name: string; amount: number }> = {
+  starter: { name: "Starter Plan", amount: 4900 },
+  professional: { name: "Professional Plan", amount: 9900 },
+  enterprise: { name: "Enterprise Plan", amount: 19900 },
+};
+
+async function getOrCreatePrice(stripe: Stripe, plan: string, configuredPriceId: string): Promise<string> {
+  if (configuredPriceId) {
+    return configuredPriceId;
+  }
+
+  const planConfig = PLAN_PRICES[plan];
+  if (!planConfig) {
+    throw new Error(`Invalid plan: ${plan}`);
+  }
+
+  const prices = await stripe.prices.list({
+    lookup_keys: [`pms_${plan}_monthly`],
+    expand: ["data.product"],
+  });
+
+  if (prices.data.length > 0) {
+    return prices.data[0].id;
+  }
+
+  const product = await stripe.products.create({
+    name: planConfig.name,
+  });
+
+  const price = await stripe.prices.create({
+    product: product.id,
+    unit_amount: planConfig.amount,
+    currency: "usd",
+    recurring: { interval: "month" },
+    lookup_key: `pms_${plan}_monthly`,
+  });
+
+  return price.id;
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, {
@@ -58,6 +98,10 @@ Deno.serve(async (req: Request) => {
     }
 
     const { clinicId, plan, successUrl, cancelUrl }: CheckoutRequest = await req.json();
+
+    if (!PLAN_PRICES[plan]) {
+      throw new Error(`Invalid plan selected: ${plan}`);
+    }
 
     const { data: clinicUser, error: clinicUserError } = await supabaseClient
       .from("user_clinics")
@@ -115,16 +159,8 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    const priceMap: Record<string, string> = {
-      starter: Deno.env.get("STRIPE_PRICE_STARTER") || "",
-      professional: Deno.env.get("STRIPE_PRICE_PROFESSIONAL") || "",
-      enterprise: Deno.env.get("STRIPE_PRICE_ENTERPRISE") || "",
-    };
-
-    const priceId = priceMap[plan];
-    if (!priceId) {
-      throw new Error("Invalid plan selected");
-    }
+    const configuredPriceId = Deno.env.get(`STRIPE_PRICE_${plan.toUpperCase()}`) || "";
+    const priceId = await getOrCreatePrice(stripe, plan, configuredPriceId);
 
     const session = await stripe.checkout.sessions.create({
       customer: stripeCustomerId,
