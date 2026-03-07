@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { assertNotDemoMode } from '@/lib/demoMode';
 
 export interface Backup {
   id: string;
@@ -91,6 +92,7 @@ export async function getBackupStats(clinicId: string): Promise<{
 }
 
 export async function deleteBackup(backupId: string): Promise<void> {
+  assertNotDemoMode();
   const { error } = await supabase
     .from('backups')
     .delete()
@@ -105,6 +107,7 @@ export interface CreateBackupPayload {
 }
 
 export async function createBackup(payload: CreateBackupPayload): Promise<Backup> {
+  assertNotDemoMode();
   const { data, error } = await supabase
     .from('backups')
     .insert({

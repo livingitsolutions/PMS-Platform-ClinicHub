@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { UserRole } from '@/store/clinic-store';
+import { assertNotDemoMode } from '@/lib/demoMode';
 
 export interface StaffMember {
   id: string;
@@ -70,6 +71,7 @@ export async function inviteStaffMember(
   clinicId: string,
   payload: InviteStaffPayload
 ): Promise<void> {
+  assertNotDemoMode();
   const { data: authData, error: authError } = await supabase
     .rpc('get_user_id_by_email', { email_input: payload.email });
 
@@ -100,6 +102,7 @@ export async function updateStaffRole(
   membershipId: string,
   role: UserRole
 ): Promise<void> {
+  assertNotDemoMode();
   const { error } = await supabase
     .from('user_clinics')
     .update({ role })
@@ -109,6 +112,7 @@ export async function updateStaffRole(
 }
 
 export async function removeStaffMember(membershipId: string): Promise<void> {
+  assertNotDemoMode();
   const { error } = await supabase
     .from('user_clinics')
     .delete()

@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { logAuditEvent, AuditActions, EntityTypes } from '@/lib/audit';
+import { assertNotDemoMode } from '@/lib/demoMode';
 
 export interface CreateClinicPayload {
   clinic_name: string;
@@ -18,6 +19,7 @@ export interface Clinic {
 }
 
 export async function createClinic(payload: CreateClinicPayload): Promise<Clinic> {
+  assertNotDemoMode();
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {

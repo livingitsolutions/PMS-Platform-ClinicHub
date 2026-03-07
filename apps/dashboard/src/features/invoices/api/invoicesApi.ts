@@ -65,6 +65,7 @@ export async function getInvoiceByVisit(visitId: string): Promise<Invoice | null
 }
 
 export async function getOrCreateInvoice(visitId: string): Promise<Invoice> {
+  assertNotDemoMode();
   const { data: visit, error: visitError } = await supabase
     .from('visits')
     .select('clinic_id')
@@ -249,6 +250,7 @@ export async function createPayment(payload: CreatePaymentPayload): Promise<Paym
 }
 
 export async function recalculateInvoiceTotal(visitId: string): Promise<void> {
+  assertNotDemoMode();
   const { data: invoice, error: invoiceError } = await supabase
     .from('invoices')
     .select('id')

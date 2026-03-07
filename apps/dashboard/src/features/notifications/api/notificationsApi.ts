@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { assertNotDemoMode } from '@/lib/demoMode';
 
 export interface Notification {
   id: string;
@@ -37,6 +38,7 @@ export async function getUnreadCount(userId: string): Promise<number> {
 }
 
 export async function markAsRead(notificationId: string): Promise<void> {
+  assertNotDemoMode();
   const { error } = await supabase
     .from('notifications')
     .update({ read: true })
@@ -46,6 +48,7 @@ export async function markAsRead(notificationId: string): Promise<void> {
 }
 
 export async function markAllAsRead(userId: string): Promise<void> {
+  assertNotDemoMode();
   const { error } = await supabase
     .from('notifications')
     .update({ read: true })
@@ -62,6 +65,7 @@ export async function createNotification(
   message: string,
   metadata: Record<string, unknown> = {}
 ): Promise<void> {
+  assertNotDemoMode();
   const { error } = await supabase
     .from('notifications')
     .insert({

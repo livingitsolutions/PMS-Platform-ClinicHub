@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { assertNotDemoMode } from '@/lib/demoMode';
 
 export interface AppointmentReminder {
   id: string;
@@ -81,6 +82,7 @@ export async function getPendingReminders(
 }
 
 export async function markReminderAsSent(reminderId: string): Promise<void> {
+  assertNotDemoMode();
   const { error } = await supabase
     .from('appointment_reminders')
     .update({ sent: true })
@@ -115,6 +117,7 @@ export async function createManualReminder(
   clinicId: string,
   reminderTime: string
 ): Promise<AppointmentReminder> {
+  assertNotDemoMode();
   const { data, error } = await supabase
     .from('appointment_reminders')
     .insert({
@@ -131,6 +134,7 @@ export async function createManualReminder(
 }
 
 export async function deleteReminder(reminderId: string, clinicId: string): Promise<void> {
+  assertNotDemoMode();
   const { error } = await supabase
     .from('appointment_reminders')
     .delete()
