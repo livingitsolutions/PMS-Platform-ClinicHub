@@ -2,18 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Footer } from '../components/Footer';
 import { MarketingNav } from '../components/MarketingNav';
-import {
-  Users,
-  Calendar,
-  ClipboardList,
-  BarChart2,
-  CreditCard,
-  UserCog,
-  Copy,
-  ArrowRight,
-  CircleCheck as CheckCircle,
-  Lock,
-} from 'lucide-react';
+import { Users, Calendar, ClipboardList, ChartBar as BarChart2, CreditCard, UserCog, Copy, ArrowRight, CircleCheck as CheckCircle, Lock } from 'lucide-react';
 import { useState } from 'react';
 
 const FEATURES = [
