@@ -13,7 +13,7 @@ import { useVisit, useUpdateVisit } from '../hooks/useVisit';
 import { VisitProceduresTable } from '../components/VisitProceduresTable';
 import { AddProcedureDialog } from '../components/AddProcedureDialog';
 import { EditVisitNotesDialog } from '../components/EditVisitNotesDialog';
-import { useInvoice, usePayments } from '@/features/invoices/hooks/useInvoice';
+import { useEnsureInvoice, usePayments } from '@/features/invoices/hooks/useInvoice';
 import { InvoiceSummary } from '@/features/invoices/components/InvoiceSummary';
 import { PaymentDialog } from '@/features/invoices/components/PaymentDialog';
 import { PaymentHistoryTable } from '@/features/invoices/components/PaymentHistoryTable';
@@ -44,7 +44,7 @@ export function VisitPage() {
   const { visitId } = useParams<{ visitId: string }>();
   const navigate = useNavigate();
   const { data: visit, isLoading, error } = useVisit(visitId || '');
-  const { data: invoice, isLoading: invoiceLoading } = useInvoice(visitId);
+  const { data: invoice, isLoading: invoiceLoading } = useEnsureInvoice(visitId);
   const { data: payments, isLoading: paymentsLoading } = usePayments(invoice?.id);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);

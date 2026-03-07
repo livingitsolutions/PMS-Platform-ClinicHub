@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   getOrCreateInvoice,
+  getInvoiceByVisit,
   getPaymentsByInvoice,
   createPayment,
   type Invoice,
@@ -11,7 +12,21 @@ import {
 export function useInvoice(visitId: string | undefined) {
   return useQuery<Invoice | null>({
     queryKey: ['invoice', visitId],
-    queryFn: () => (visitId ? getOrCreateInvoice(visitId) : null),
+    queryFn: () => (visitId ? getInvoiceByVisit(visitId) : null),
+    enabled: !!visitId,
+  });
+}
+
+async function getOrFetchInvoice(visitId: string): Promise<Invoice | null> {
+  const existing = await getInvoiceByVisit(visitId);
+  if (existing) return existing;
+  return getOrCreateInvoice(visitId);
+}
+
+export function useEnsureInvoice(visitId: string | undefined) {
+  return useQuery<Invoice | null>({
+    queryKey: ['invoice', visitId],
+    queryFn: () => (visitId ? getOrFetchInvoice(visitId) : null),
     enabled: !!visitId,
   });
 }
