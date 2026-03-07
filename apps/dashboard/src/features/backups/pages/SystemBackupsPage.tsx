@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -9,10 +9,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { useClinicBackups, useBackupStats, useCreateBackup } from '../hooks/useBackups';
+import { useClinicBackups, useBackupStats, useCreateBackup, useDeleteBackup } from '../hooks/useBackups';
 import { BackupStatusCard } from '../components/BackupStatusCard';
 import { useClinicStore } from '@/store/clinic-store';
-import { Database, Download, RefreshCw, CircleCheck as CheckCircle, Circle as XCircle, Clock, CircleAlert as AlertCircle } from 'lucide-react';
+import { Database, Download, RefreshCw, CircleCheck as CheckCircle, Circle as XCircle, Clock, CircleAlert as AlertCircle, Trash2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { DashboardLayout, PageHeader } from '@/components/layout/DashboardLayout';
 
@@ -21,8 +21,10 @@ export function SystemBackupsPage() {
   const { data: backups = [], isLoading, refetch } = useClinicBackups(clinicId);
   const { data: stats } = useBackupStats();
   const createBackupMutation = useCreateBackup();
+  const deleteBackupMutation = useDeleteBackup(clinicId);
   const currentClinic = clinics.find((c) => c.id === clinicId);
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const hasInProgress = backups.some(
     (b) => b.backup_status === 'pending' || b.backup_status === 'in_progress'
@@ -43,6 +45,15 @@ export function SystemBackupsPage() {
       if (pollingRef.current) clearInterval(pollingRef.current);
     };
   }, [hasInProgress, refetch]);
+
+  const handleDeleteBackup = async (backupId: string) => {
+    try {
+      await deleteBackupMutation.mutateAsync(backupId);
+      setConfirmDeleteId(null);
+    } catch (error) {
+      console.error('Failed to delete backup:', error);
+    }
+  };
 
   const handleCreateBackup = async () => {
     if (!clinicId) return;
@@ -214,15 +225,46 @@ export function SystemBackupsPage() {
                       </TableCell>
                       <TableCell>{formatBytes(backup.backup_size)}</TableCell>
                       <TableCell>
-                        {backup.backup_status === 'completed' && backup.storage_url && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => window.open(backup.storage_url!, '_blank')}
-                          >
-                            <Download className="size-4" />
-                          </Button>
-                        )}
+                        <div className="flex items-center gap-1">
+                          {backup.backup_status === 'completed' && backup.storage_url && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => window.open(backup.storage_url!, '_blank')}
+                            >
+                              <Download className="size-4" />
+                            </Button>
+                          )}
+                          {confirmDeleteId === backup.id ? (
+                            <div className="flex items-center gap-1">
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => handleDeleteBackup(backup.id)}
+                                disabled={deleteBackupMutation.isPending}
+                              >
+                                {deleteBackupMutation.isPending ? 'Deleting...' : 'Confirm'}
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setConfirmDeleteId(null)}
+                                disabled={deleteBackupMutation.isPending}
+                              >
+                                Cancel
+                              </Button>
+                            </div>
+                          ) : (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setConfirmDeleteId(backup.id)}
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            >
+                              <Trash2 className="size-4" />
+                            </Button>
+                          )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}

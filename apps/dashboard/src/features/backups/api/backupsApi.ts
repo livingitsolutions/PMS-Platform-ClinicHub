@@ -90,6 +90,15 @@ export async function getBackupStats(clinicId: string): Promise<{
   };
 }
 
+export async function deleteBackup(backupId: string): Promise<void> {
+  const { error } = await supabase
+    .from('backups')
+    .delete()
+    .eq('id', backupId);
+
+  if (error) throw error;
+}
+
 export interface CreateBackupPayload {
   clinic_id?: string | null;
   backup_type?: 'full' | 'incremental' | 'differential';

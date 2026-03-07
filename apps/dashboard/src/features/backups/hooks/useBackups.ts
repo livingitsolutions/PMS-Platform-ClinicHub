@@ -5,6 +5,7 @@ import {
   getLatestBackupByClinic,
   getBackupStats,
   createBackup,
+  deleteBackup,
   type CreateBackupPayload,
 } from '../api/backupsApi';
 
@@ -54,6 +55,19 @@ export function useCreateBackup() {
         queryClient.invalidateQueries({ queryKey: ['backups', 'latest', variables.clinic_id] });
         queryClient.invalidateQueries({ queryKey: ['backups', 'stats', variables.clinic_id] });
       }
+    },
+  });
+}
+
+export function useDeleteBackup(clinicId: string | null) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (backupId: string) => deleteBackup(backupId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['backups', 'clinic', clinicId] });
+      queryClient.invalidateQueries({ queryKey: ['backups', 'latest', clinicId] });
+      queryClient.invalidateQueries({ queryKey: ['backups', 'stats', clinicId] });
     },
   });
 }
