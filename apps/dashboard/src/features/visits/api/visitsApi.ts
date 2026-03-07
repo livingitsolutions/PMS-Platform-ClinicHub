@@ -166,7 +166,7 @@ export async function updateVisit(visitId: string, payload: UpdateVisitPayload):
 
   if (payload.status === 'completed') {
     const { data: clinicUsers } = await supabase
-      .from('clinic_users')
+      .from('user_clinics')
       .select('user_id')
       .eq('clinic_id', visit.clinic_id);
 

@@ -60,7 +60,7 @@ Deno.serve(async (req: Request) => {
     const { clinicId, plan, successUrl, cancelUrl }: CheckoutRequest = await req.json();
 
     const { data: clinicUser, error: clinicUserError } = await supabaseClient
-      .from("clinic_users")
+      .from("user_clinics")
       .select("role")
       .eq("clinic_id", clinicId)
       .eq("user_id", user.id)

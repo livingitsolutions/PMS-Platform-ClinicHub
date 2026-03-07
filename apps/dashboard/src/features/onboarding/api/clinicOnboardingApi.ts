@@ -38,7 +38,7 @@ export async function createClinic(payload: CreateClinicPayload): Promise<Clinic
   if (clinicError) throw clinicError;
 
   const { error: clinicUserError } = await supabase
-    .from('clinic_users')
+    .from('user_clinics')
     .insert({
       clinic_id: clinic.id,
       user_id: user.id,

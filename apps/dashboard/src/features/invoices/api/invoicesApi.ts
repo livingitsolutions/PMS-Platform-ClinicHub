@@ -216,7 +216,7 @@ export async function createPayment(payload: CreatePaymentPayload): Promise<Paym
   }
 
   const { data: clinicUsers } = await supabase
-    .from('clinic_users')
+    .from('user_clinics')
     .select('user_id')
     .eq('clinic_id', invoice.clinic_id);
 

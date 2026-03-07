@@ -116,7 +116,7 @@ export async function createAppointment(
     .single();
 
   const { data: clinicUsers } = await supabase
-    .from('clinic_users')
+    .from('user_clinics')
     .select('user_id')
     .eq('clinic_id', clinicId);
 

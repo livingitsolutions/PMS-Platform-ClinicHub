@@ -24,7 +24,7 @@ export function useUserClinics() {
       if (!user?.id) return []
 
       const { data, error } = await supabase
-        .from('clinic_users')
+        .from('user_clinics')
         .select('clinics(*), role')
         .eq('user_id', user.id)
 
