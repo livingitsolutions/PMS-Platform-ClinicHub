@@ -1,10 +1,12 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
-import { Calendar, Stethoscope, FileText, ArrowRight, ClipboardList, Activity } from 'lucide-react';
+import { Calendar, Stethoscope, FileText, ArrowRight, ClipboardList, Activity, PlusCircle } from 'lucide-react';
 import type { Patient } from '../api/patientsApi';
 import { Button } from '@/components/ui/button';
 import { formatCurrency } from '@/lib/currency';
+import { CreateVisitForPatientDialog } from '@/features/visits/components/CreateVisitForPatientDialog';
 
 interface Visit {
   id: string;
@@ -93,6 +95,7 @@ interface PatientDetailPanelProps {
 
 export function PatientDetailPanel({ patient, clinicId, currencyCode }: PatientDetailPanelProps) {
   const navigate = useNavigate();
+  const [newVisitOpen, setNewVisitOpen] = useState(false);
 
   const { data: visits = [], isLoading } = useQuery({
     queryKey: ['patient-visits-detail', patient.id, clinicId],
@@ -108,11 +111,17 @@ export function PatientDetailPanel({ patient, clinicId, currencyCode }: PatientD
   return (
     <div className="h-full overflow-y-auto bg-gray-50">
       <div className="p-6">
-        <div className="mb-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-1">
-            {patient.first_name} {patient.last_name}
-          </h2>
-          <p className="text-sm text-gray-500">Patient visit history and billing overview</p>
+        <div className="mb-6 flex items-start justify-between gap-4">
+          <div>
+            <h2 className="text-xl font-bold text-gray-900 mb-1">
+              {patient.first_name} {patient.last_name}
+            </h2>
+            <p className="text-sm text-gray-500">Patient visit history and billing overview</p>
+          </div>
+          <Button size="sm" onClick={() => setNewVisitOpen(true)} className="shrink-0">
+            <PlusCircle className="size-3.5 mr-1.5" />
+            New Visit
+          </Button>
         </div>
 
         <div className="grid grid-cols-3 gap-4 mb-6">
@@ -222,6 +231,13 @@ export function PatientDetailPanel({ patient, clinicId, currencyCode }: PatientD
           )}
         </div>
       </div>
+
+      <CreateVisitForPatientDialog
+        patientId={patient.id}
+        patientName={`${patient.first_name} ${patient.last_name}`}
+        open={newVisitOpen}
+        onOpenChange={setNewVisitOpen}
+      />
     </div>
   );
 }

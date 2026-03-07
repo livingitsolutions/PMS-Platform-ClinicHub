@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
@@ -15,7 +16,8 @@ import {
 } from '@/components/ui/table';
 import { DashboardLayout, PageHeader } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, PlusCircle } from 'lucide-react';
+import { CreateVisitForPatientDialog } from '@/features/visits/components/CreateVisitForPatientDialog';
 
 interface Visit {
   id: string;
@@ -77,6 +79,7 @@ export function PatientProfilePage() {
   const { patientId } = useParams<{ patientId: string }>();
   const navigate = useNavigate();
   const { clinicId } = useClinicStore();
+  const [newVisitOpen, setNewVisitOpen] = useState(false);
 
   const { data: patient, isLoading } = useQuery({
     queryKey: ['patient', patientId, clinicId],
@@ -135,7 +138,15 @@ export function PatientProfilePage() {
         Back
       </Button>
 
-      <PageHeader title={`${patient.first_name} ${patient.last_name}`} />
+      <PageHeader
+        title={`${patient.first_name} ${patient.last_name}`}
+        actions={
+          <Button onClick={() => setNewVisitOpen(true)}>
+            <PlusCircle className="size-4 mr-2" />
+            New Visit
+          </Button>
+        }
+      />
 
       <div className="space-y-6">
         <Card>
@@ -224,6 +235,13 @@ export function PatientProfilePage() {
 
         <PatientTimeline patientId={patientId} clinicId={clinicId} />
       </div>
+
+      <CreateVisitForPatientDialog
+        patientId={patientId}
+        patientName={`${patient.first_name} ${patient.last_name}`}
+        open={newVisitOpen}
+        onOpenChange={setNewVisitOpen}
+      />
     </DashboardLayout>
   );
 }
