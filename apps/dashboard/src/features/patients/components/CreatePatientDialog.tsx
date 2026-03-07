@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { supabase } from '@/lib/supabase';
 import { useClinicStore } from '@/store/clinic-store';
+import { createPatient } from '../api/patientsApi';
+import { DemoModeError } from '@/lib/demoMode';
 import {
   Dialog,
   DialogContent,
@@ -67,8 +68,7 @@ export function CreatePatientDialog({
     setError(null);
 
     try {
-      const { error: insertError } = await supabase.from('patients').insert({
-        clinic_id: clinicId,
+      await createPatient(clinicId, {
         first_name: data.first_name,
         last_name: data.last_name,
         date_of_birth: data.date_of_birth,
@@ -78,13 +78,10 @@ export function CreatePatientDialog({
         address: data.address || null,
       });
 
-      if (insertError) {
-        throw insertError;
-      }
-
       reset();
       onSuccess();
     } catch (err) {
+      if (err instanceof DemoModeError) return;
       setError(err instanceof Error ? err.message : 'Failed to create patient');
     } finally {
       setIsSubmitting(false);

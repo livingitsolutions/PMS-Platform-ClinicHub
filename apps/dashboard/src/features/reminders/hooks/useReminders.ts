@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useClinicStore } from '@/store/clinic-store';
 import { supabase } from '@/lib/supabase';
+import { assertNotDemoMode } from '@/lib/demoMode';
 import {
   getPendingReminders,
   getClinicReminders,
@@ -90,6 +91,7 @@ export function useProcessReminders() {
 
   return useMutation({
     mutationFn: async () => {
+      assertNotDemoMode();
       const { data: { session } } = await supabase.auth.getSession();
 
       if (!session) {
