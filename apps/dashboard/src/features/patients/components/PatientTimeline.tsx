@@ -1,5 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
+import { useClinicStore } from '@/store/clinic-store';
+import { formatCurrency } from '@/lib/currency';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface TimelineVisit {
@@ -40,18 +42,24 @@ interface TimelineEvent {
   badge: string;
 }
 
-async function getPatientTimelineData(patientId: string): Promise<TimelineEvent[]> {
+async function getPatientTimelineData(
+  patientId: string,
+  clinicId: string,
+  currencyCode: string
+): Promise<TimelineEvent[]> {
   const [visitsRes, appointmentsRes] = await Promise.all([
     supabase
       .from('visits')
       .select('id, visit_date, diagnosis, chief_complaint')
       .eq('patient_id', patientId)
+      .eq('clinic_id', clinicId)
       .order('visit_date', { ascending: false })
       .limit(50),
     supabase
       .from('appointments')
       .select('id, start_time, status')
       .eq('patient_id', patientId)
+      .eq('clinic_id', clinicId)
       .order('start_time', { ascending: false })
       .limit(50),
   ]);
@@ -112,7 +120,7 @@ async function getPatientTimelineData(patientId: string): Promise<TimelineEvent[
       id: i.id,
       type: 'invoice',
       date: new Date(i.created_at),
-      label: `Invoice — $${Number(i.total_amount).toFixed(2)}`,
+      label: `Invoice — ${formatCurrency(Number(i.total_amount), currencyCode)}`,
       sublabel: i.status.charAt(0).toUpperCase() + i.status.slice(1),
       badge: 'Invoice',
     })),
@@ -120,7 +128,7 @@ async function getPatientTimelineData(patientId: string): Promise<TimelineEvent[
       id: p.id,
       type: 'payment',
       date: new Date(p.created_at),
-      label: `Payment — $${Number(p.amount).toFixed(2)}`,
+      label: `Payment — ${formatCurrency(Number(p.amount), currencyCode)}`,
       sublabel: p.method.replace('_', ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
       badge: 'Payment',
     })),
@@ -167,13 +175,18 @@ function formatEventTime(date: Date): string {
 
 interface PatientTimelineProps {
   patientId: string;
+  clinicId: string;
 }
 
-export function PatientTimeline({ patientId }: PatientTimelineProps) {
+export function PatientTimeline({ patientId, clinicId }: PatientTimelineProps) {
+  const { clinics } = useClinicStore();
+  const selectedClinic = clinics.find((c) => c.id === clinicId);
+  const currencyCode = selectedClinic?.currency_code ?? 'PHP';
+
   const { data: events, isLoading, isError } = useQuery({
-    queryKey: ['patient-timeline', patientId],
-    queryFn: () => getPatientTimelineData(patientId),
-    enabled: !!patientId,
+    queryKey: ['patient-timeline', patientId, clinicId],
+    queryFn: () => getPatientTimelineData(patientId, clinicId, currencyCode),
+    enabled: !!patientId && !!clinicId,
     staleTime: 1000 * 60 * 2,
   });
 

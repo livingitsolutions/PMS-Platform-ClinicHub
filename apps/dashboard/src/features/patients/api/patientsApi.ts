@@ -151,11 +151,12 @@ export async function updatePatient(
   return patient;
 }
 
-export async function deletePatient(patientId: string): Promise<void> {
+export async function deletePatient(patientId: string, clinicId: string): Promise<void> {
   const { error } = await supabase
     .from('patients')
     .delete()
-    .eq('id', patientId);
+    .eq('id', patientId)
+    .eq('clinic_id', clinicId);
 
   if (error) throw error;
 }

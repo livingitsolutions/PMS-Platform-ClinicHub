@@ -21,7 +21,7 @@ export const SubscriptionGuard = ({ children }: SubscriptionGuardProps) => {
   }
 
   if (!isActive) {
-    return <Navigate to="/billing" replace />;
+    return <Navigate to="/select-plan" replace />;
   }
 
   return <>{children}</>;

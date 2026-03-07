@@ -130,11 +130,12 @@ export async function createManualReminder(
   return data as AppointmentReminder;
 }
 
-export async function deleteReminder(reminderId: string): Promise<void> {
+export async function deleteReminder(reminderId: string, clinicId: string): Promise<void> {
   const { error } = await supabase
     .from('appointment_reminders')
     .delete()
-    .eq('id', reminderId);
+    .eq('id', reminderId)
+    .eq('clinic_id', clinicId);
 
   if (error) throw error;
 }

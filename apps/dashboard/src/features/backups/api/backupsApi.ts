@@ -64,7 +64,7 @@ export async function getLatestBackupByClinic(clinicId: string): Promise<Backup 
   return data as Backup | null;
 }
 
-export async function getBackupStats(): Promise<{
+export async function getBackupStats(clinicId: string): Promise<{
   totalBackups: number;
   completedBackups: number;
   failedBackups: number;
@@ -72,7 +72,8 @@ export async function getBackupStats(): Promise<{
 }> {
   const { data: allBackups, error: allError } = await supabase
     .from('backups')
-    .select('backup_status, backup_size');
+    .select('backup_status, backup_size')
+    .eq('clinic_id', clinicId);
 
   if (allError) throw allError;
 

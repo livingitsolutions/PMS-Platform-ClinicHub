@@ -162,6 +162,13 @@ export function VisitsListPage() {
 
   return (
     <div className="container mx-auto py-8">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold">Visits</h1>
+        <p className="text-muted-foreground mt-1">
+          View and manage patient visits
+        </p>
+      </div>
+
       {error && (
         <div className="mb-6">
           <QueryErrorAlert error={error} onRetry={() => refetch()} />
@@ -170,13 +177,6 @@ export function VisitsListPage() {
 
       {!error && (
         <>
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold">Visits</h1>
-        <p className="text-muted-foreground mt-1">
-          View and manage patient visits
-        </p>
-      </div>
-
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">

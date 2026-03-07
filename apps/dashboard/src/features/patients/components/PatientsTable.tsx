@@ -27,7 +27,7 @@ export function PatientsTable({ patients, isLoading, clinicId }: PatientsTablePr
   const queryClient = useQueryClient();
 
   const deleteMutation = useMutation({
-    mutationFn: (patientId: string) => deletePatient(patientId),
+    mutationFn: (patientId: string) => deletePatient(patientId, clinicId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['patients', clinicId] });
     },

@@ -73,7 +73,10 @@ export function useDeleteReminder() {
   const clinicId = useClinicStore((state) => state.clinicId);
 
   return useMutation({
-    mutationFn: deleteReminder,
+    mutationFn: (reminderId: string) => {
+      if (!clinicId) throw new Error('No clinic selected');
+      return deleteReminder(reminderId, clinicId);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['reminders', 'pending', clinicId] });
       queryClient.invalidateQueries({ queryKey: ['reminders', 'clinic', clinicId] });

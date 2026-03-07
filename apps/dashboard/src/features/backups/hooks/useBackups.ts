@@ -1,19 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useClinicStore } from '@/store/clinic-store';
 import {
-  getAllBackups,
   getClinicBackups,
   getLatestBackupByClinic,
   getBackupStats,
   createBackup,
   type CreateBackupPayload,
 } from '../api/backupsApi';
-
-export function useAllBackups() {
-  return useQuery({
-    queryKey: ['backups'],
-    queryFn: getAllBackups,
-  });
-}
 
 export function useClinicBackups(clinicId: string | null) {
   return useQuery({
@@ -38,9 +31,15 @@ export function useLatestBackup(clinicId: string | null) {
 }
 
 export function useBackupStats() {
+  const clinicId = useClinicStore((s) => s.clinicId);
+
   return useQuery({
-    queryKey: ['backups', 'stats'],
-    queryFn: getBackupStats,
+    queryKey: ['backups', 'stats', clinicId],
+    enabled: !!clinicId,
+    queryFn: () => {
+      if (!clinicId) throw new Error('No clinic selected');
+      return getBackupStats(clinicId);
+    },
   });
 }
 
@@ -53,9 +52,8 @@ export function useCreateBackup() {
       if (variables.clinic_id) {
         queryClient.invalidateQueries({ queryKey: ['backups', 'clinic', variables.clinic_id] });
         queryClient.invalidateQueries({ queryKey: ['backups', 'latest', variables.clinic_id] });
+        queryClient.invalidateQueries({ queryKey: ['backups', 'stats', variables.clinic_id] });
       }
-      queryClient.invalidateQueries({ queryKey: ['backups', 'stats'] });
-      queryClient.invalidateQueries({ queryKey: ['backups'] });
     },
   });
 }

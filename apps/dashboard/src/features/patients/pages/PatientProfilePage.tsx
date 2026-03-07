@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
+import { useClinicStore } from '@/store/clinic-store';
 import { Patient } from '../api/patientsApi';
 import { PatientTimeline } from '../components/PatientTimeline';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,7 +23,7 @@ interface Visit {
   } | null;
 }
 
-async function getPatient(patientId: string): Promise<Patient> {
+async function getPatient(patientId: string, clinicId: string): Promise<Patient> {
   const { data, error } = await supabase
     .from('patients')
     .select(`
@@ -39,6 +40,7 @@ async function getPatient(patientId: string): Promise<Patient> {
       updated_at
     `)
     .eq('id', patientId)
+    .eq('clinic_id', clinicId)
     .maybeSingle();
 
   if (error) throw error;
@@ -47,7 +49,7 @@ async function getPatient(patientId: string): Promise<Patient> {
   return data as Patient;
 }
 
-async function getPatientVisits(patientId: string): Promise<Visit[]> {
+async function getPatientVisits(patientId: string, clinicId: string): Promise<Visit[]> {
   const { data, error } = await supabase
     .from('visits')
     .select(`
@@ -59,6 +61,7 @@ async function getPatientVisits(patientId: string): Promise<Visit[]> {
       )
     `)
     .eq('patient_id', patientId)
+    .eq('clinic_id', clinicId)
     .order('visit_date', { ascending: false })
     .limit(50);
 
@@ -70,22 +73,23 @@ async function getPatientVisits(patientId: string): Promise<Visit[]> {
 export function PatientProfilePage() {
   const { patientId } = useParams<{ patientId: string }>();
   const navigate = useNavigate();
-  
+  const { clinicId } = useClinicStore();
+
   const { data: patient, isLoading } = useQuery({
-    queryKey: ['patient', patientId],
-    queryFn: () => getPatient(patientId!),
-    enabled: !!patientId,
+    queryKey: ['patient', patientId, clinicId],
+    queryFn: () => getPatient(patientId!, clinicId!),
+    enabled: !!patientId && !!clinicId,
     staleTime: 1000 * 60 * 2,
   });
 
   const { data: visits, isLoading: isLoadingVisits } = useQuery({
-    queryKey: ['patient-visits', patientId],
-    queryFn: () => getPatientVisits(patientId!),
-    enabled: !!patientId,
+    queryKey: ['patient-visits', patientId, clinicId],
+    queryFn: () => getPatientVisits(patientId!, clinicId!),
+    enabled: !!patientId && !!clinicId,
     staleTime: 1000 * 60 * 2,
   });
 
-  if (!patientId) {
+  if (!patientId || !clinicId) {
     return (
       <div className="p-8">
         <p className="text-muted-foreground">Invalid patient ID</p>
@@ -181,10 +185,11 @@ export function PatientProfilePage() {
               </TableHeader>
               <TableBody>
                 {visits?.map((visit) => (
-                  <TableRow key={visit.id}
+                  <TableRow
+                    key={visit.id}
                     className="cursor-pointer hover:bg-muted/50"
                     onClick={() => navigate(`/visits/${visit.id}`)}
-                    >
+                  >
                     <TableCell>
                       {formatDate(visit.visit_date)}
                     </TableCell>
@@ -202,7 +207,7 @@ export function PatientProfilePage() {
         </CardContent>
       </Card>
 
-      <PatientTimeline patientId={patientId} />
+      <PatientTimeline patientId={patientId} clinicId={clinicId} />
     </div>
   );
 }

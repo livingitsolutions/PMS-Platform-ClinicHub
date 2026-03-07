@@ -9,20 +9,24 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { useAllBackups, useBackupStats, useCreateBackup } from '../hooks/useBackups';
+import { useClinicBackups, useBackupStats, useCreateBackup } from '../hooks/useBackups';
 import { BackupStatusCard } from '../components/BackupStatusCard';
+import { useClinicStore } from '@/store/clinic-store';
 import { Database, Download, RefreshCw, CircleCheck as CheckCircle, Circle as XCircle, Clock, CircleAlert as AlertCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 export function SystemBackupsPage() {
-  const { data: backups = [], isLoading, refetch } = useAllBackups();
+  const { clinicId, clinics } = useClinicStore();
+  const { data: backups = [], isLoading, refetch } = useClinicBackups(clinicId);
   const { data: stats } = useBackupStats();
   const createBackupMutation = useCreateBackup();
+  const currentClinic = clinics.find((c) => c.id === clinicId);
 
-  const handleCreateBackup = async (clinicId?: string) => {
+  const handleCreateBackup = async () => {
+    if (!clinicId) return;
     try {
       await createBackupMutation.mutateAsync({
-        clinic_id: clinicId || null,
+        clinic_id: clinicId,
         backup_type: 'full',
       });
       refetch();
@@ -54,14 +58,17 @@ export function SystemBackupsPage() {
     return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
   };
 
-  const groupedBackups = backups.reduce((acc, backup) => {
-    const clinicId = backup.clinic_id || 'system';
-    if (!acc[clinicId]) {
-      acc[clinicId] = [];
-    }
-    acc[clinicId].push(backup);
-    return acc;
-  }, {} as Record<string, typeof backups>);
+  if (!clinicId) {
+    return (
+      <AppLayout>
+        <div className="mx-auto max-w-7xl px-4 py-8">
+          <p className="text-muted-foreground">Please select a clinic first.</p>
+        </div>
+      </AppLayout>
+    );
+  }
+
+  const latestBackup = backups.length > 0 ? backups[0] : null;
 
   return (
     <AppLayout>
@@ -81,11 +88,11 @@ export function SystemBackupsPage() {
               Refresh
             </Button>
             <Button
-              onClick={() => handleCreateBackup()}
+              onClick={handleCreateBackup}
               disabled={createBackupMutation.isPending}
             >
               <Database className="size-4 mr-2" />
-              {createBackupMutation.isPending ? 'Creating...' : 'Create System Backup'}
+              {createBackupMutation.isPending ? 'Creating...' : 'Create Backup'}
             </Button>
           </div>
         </div>
@@ -136,25 +143,17 @@ export function SystemBackupsPage() {
           </Card>
         </div>
 
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Latest Backups by Clinic</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {Object.entries(groupedBackups).map(([clinicId, clinicBackups]) => {
-              const latestBackup = clinicBackups[0];
-              const clinicName = clinicId === 'system'
-                ? 'System-wide'
-                : latestBackup.clinics?.name || 'Unknown Clinic';
-
-              return (
-                <BackupStatusCard
-                  key={clinicId}
-                  backup={latestBackup}
-                  clinicName={clinicName}
-                />
-              );
-            })}
+        {latestBackup && (
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Latest Backup</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <BackupStatusCard
+                backup={latestBackup}
+                clinicName={currentClinic?.name || 'Unknown Clinic'}
+              />
+            </div>
           </div>
-        </div>
+        )}
 
         <Card>
           <CardHeader>
@@ -173,7 +172,6 @@ export function SystemBackupsPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Clinic</TableHead>
                       <TableHead>Backup Time</TableHead>
                       <TableHead>Type</TableHead>
                       <TableHead>Status</TableHead>
@@ -184,9 +182,6 @@ export function SystemBackupsPage() {
                   <TableBody>
                     {backups.map((backup) => (
                       <TableRow key={backup.id}>
-                        <TableCell className="font-medium">
-                          {backup.clinic_id ? backup.clinics?.name || 'Unknown' : 'System-wide'}
-                        </TableCell>
                         <TableCell>
                           {formatDistanceToNow(new Date(backup.backup_time), { addSuffix: true })}
                         </TableCell>
@@ -200,7 +195,11 @@ export function SystemBackupsPage() {
                         <TableCell>{formatBytes(backup.backup_size)}</TableCell>
                         <TableCell>
                           {backup.backup_status === 'completed' && backup.storage_url && (
-                            <Button variant="ghost" size="sm">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => window.open(backup.storage_url!, '_blank')}
+                            >
                               <Download className="size-4" />
                             </Button>
                           )}
