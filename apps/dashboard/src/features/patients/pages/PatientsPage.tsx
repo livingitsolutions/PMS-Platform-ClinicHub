@@ -9,6 +9,7 @@ import { usePermissions } from '@/hooks/usePermissions';
 import { getPatients } from '../api/patientsApi';
 import { QueryErrorAlert } from '@/components/system/ErrorAlert';
 import { ExportCSVButton } from '@/components/system/ExportCSVButton';
+import { DashboardLayout, PageHeader } from '@/components/layout/DashboardLayout';
 
 export function PatientsPage() {
   const clinicId = useClinicStore((state) => state.clinicId);
@@ -44,14 +45,16 @@ export function PatientsPage() {
 
   if (!clinicId) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <p className="text-muted-foreground">Please select a clinic first</p>
-      </div>
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-full">
+          <p className="text-muted-foreground">Please select a clinic first</p>
+        </div>
+      </DashboardLayout>
     );
   }
 
   return (
-    <div className="container mx-auto py-8">
+    <DashboardLayout>
       {error && (
         <div className="mb-6">
           <QueryErrorAlert error={error} onRetry={() => refetch()} />
@@ -60,46 +63,44 @@ export function PatientsPage() {
 
       {!error && (
         <>
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold">Patients</h1>
-          <p className="text-muted-foreground mt-1">
-            Manage your clinic's patient records
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <ExportCSVButton label="Export Patients" filename="patients" data={exportData} />
-          <Button
-            onClick={() => setIsCreateDialogOpen(true)}
-            disabled={permissions.role === 'staff'}
-          >
-            Add Patient
-          </Button>
-        </div>
-      </div>
+          <PageHeader
+            title="Patients"
+            subtitle="Manage your clinic's patient records"
+            actions={
+              <>
+                <ExportCSVButton label="Export Patients" filename="patients" data={exportData} />
+                <Button
+                  onClick={() => setIsCreateDialogOpen(true)}
+                  disabled={permissions.role === 'staff'}
+                >
+                  Add Patient
+                </Button>
+              </>
+            }
+          />
 
-      <PatientsTable patients={patients} isLoading={isLoading} clinicId={clinicId} />
+          <PatientsTable patients={patients} isLoading={isLoading} clinicId={clinicId} />
 
-      {!isLoading && patients.length > 0 && (
-        <Pagination
-          currentPage={currentPage}
-          totalItems={totalCount}
-          pageSize={pageSize}
-          onPageChange={setCurrentPage}
-        />
+          {!isLoading && patients.length > 0 && (
+            <Pagination
+              currentPage={currentPage}
+              totalItems={totalCount}
+              pageSize={pageSize}
+              onPageChange={setCurrentPage}
+            />
+          )}
+
+          <CreatePatientDialog
+            open={isCreateDialogOpen}
+            onOpenChange={setIsCreateDialogOpen}
+            onSuccess={() => {
+              setCurrentPage(1);
+              refetch();
+              setIsCreateDialogOpen(false);
+            }}
+          />
+        </>
       )}
-
-      <CreatePatientDialog
-        open={isCreateDialogOpen}
-        onOpenChange={setIsCreateDialogOpen}
-        onSuccess={() => {
-          setCurrentPage(1);
-          refetch();
-          setIsCreateDialogOpen(false);
-        }}
-      />
-      </>
-      )}
-    </div>
+    </DashboardLayout>
   );
 }

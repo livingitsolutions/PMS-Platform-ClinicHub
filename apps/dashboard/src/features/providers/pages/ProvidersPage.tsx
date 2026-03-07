@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/table';
 import { CreateProviderDialog } from '../components/CreateProviderDialog';
 import { QueryErrorAlert } from '@/components/system/ErrorAlert';
+import { DashboardLayout, PageHeader } from '@/components/layout/DashboardLayout';
 
 export function ProvidersPage() {
   const { clinicId } = useClinicStore();
@@ -35,22 +36,22 @@ export function ProvidersPage() {
 
   if (!clinicId) {
     return (
-      <div className="p-8">
+      <DashboardLayout>
         <p className="text-muted-foreground">Please select a clinic</p>
-      </div>
+      </DashboardLayout>
     );
   }
 
   if (!canManageProviders) {
     return (
-      <div className="p-8">
+      <DashboardLayout>
         <p className="text-muted-foreground">You do not have permission to manage providers</p>
-      </div>
+      </DashboardLayout>
     );
   }
 
   return (
-    <div className="p-8">
+    <DashboardLayout>
       {error && (
         <div className="mb-6">
           <QueryErrorAlert error={error} onRetry={() => refetch()} />
@@ -58,56 +59,63 @@ export function ProvidersPage() {
       )}
 
       {!error && (
-      <>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Providers</CardTitle>
-            <Button onClick={() => setDialogOpen(true)}>
-              Create Provider
-            </Button>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <p className="text-muted-foreground">Loading providers...</p>
-            ) : providers.length === 0 ? (
-              <p className="text-muted-foreground">No providers found</p>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Specialization</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {providers.map((provider) => (
-                    <TableRow key={provider.id}>
-                      <TableCell>{provider.name}</TableCell>
-                      <TableCell>{provider.specialization}</TableCell>
+        <>
+          <PageHeader
+            title="Providers"
+            subtitle="Manage clinic providers"
+            actions={
+              <Button onClick={() => setDialogOpen(true)}>
+                Create Provider
+              </Button>
+            }
+          />
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Providers</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <p className="text-muted-foreground">Loading providers...</p>
+              ) : providers.length === 0 ? (
+                <p className="text-muted-foreground">No providers found</p>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Specialization</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
+                  </TableHeader>
+                  <TableBody>
+                    {providers.map((provider) => (
+                      <TableRow key={provider.id}>
+                        <TableCell>{provider.name}</TableCell>
+                        <TableCell>{provider.specialization}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
 
-            {!isLoading && providers.length > 0 && (
-              <Pagination
-                currentPage={currentPage}
-                totalItems={totalCount}
-                pageSize={pageSize}
-                onPageChange={setCurrentPage}
-              />
-            )}
-          </CardContent>
-        </Card>
+              {!isLoading && providers.length > 0 && (
+                <Pagination
+                  currentPage={currentPage}
+                  totalItems={totalCount}
+                  pageSize={pageSize}
+                  onPageChange={setCurrentPage}
+                />
+              )}
+            </CardContent>
+          </Card>
 
-        <CreateProviderDialog
-          clinicId={clinicId!}
-          open={dialogOpen}
-          onOpenChange={setDialogOpen}
-        />
-      </>
+          <CreateProviderDialog
+            clinicId={clinicId!}
+            open={dialogOpen}
+            onOpenChange={setDialogOpen}
+          />
+        </>
       )}
-    </div>
+    </DashboardLayout>
   );
 }

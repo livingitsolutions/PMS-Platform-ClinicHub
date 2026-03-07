@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/table';
 import { QueryErrorAlert } from '@/components/system/ErrorAlert';
 import { ExportCSVButton } from '@/components/system/ExportCSVButton';
+import { DashboardLayout, PageHeader } from '@/components/layout/DashboardLayout';
 
 interface InvoiceWithDetails {
   id: string;
@@ -132,22 +133,22 @@ export function InvoicesPage() {
 
   if (!clinicId) {
     return (
-      <div className="p-8">
+      <DashboardLayout>
         <p className="text-muted-foreground">Please select a clinic to view invoices</p>
-      </div>
+      </DashboardLayout>
     );
   }
 
   if (!canEditBilling) {
     return (
-      <div className="p-8">
+      <DashboardLayout>
         <p className="text-muted-foreground">You do not have permission to view invoices</p>
-      </div>
+      </DashboardLayout>
     );
   }
 
   return (
-    <div className="p-8">
+    <DashboardLayout>
       {error && (
         <div className="mb-6">
           <QueryErrorAlert error={error} onRetry={() => refetch()} />
@@ -155,78 +156,81 @@ export function InvoicesPage() {
       )}
 
       {!error && (
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Invoices</CardTitle>
+        <>
+          <PageHeader
+            title="Invoices"
+            subtitle="View and manage invoices for your clinic"
+            actions={<ExportCSVButton label="Export Invoices" filename="invoices" data={exportData} />}
+          />
+
+          <Card>
+            <CardHeader>
+              <CardTitle>All Invoices</CardTitle>
               <CardDescription>
                 View and manage invoices for your clinic
               </CardDescription>
-            </div>
-            <ExportCSVButton label="Export Invoices" filename="invoices" data={exportData} />
-          </div>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <p className="text-muted-foreground">Loading invoices...</p>
-            </div>
-          ) : !invoices || invoices.length === 0 ? (
-            <p className="text-muted-foreground">No invoices found</p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Patient Name</TableHead>
-                  <TableHead>Visit Date</TableHead>
-                  <TableHead>Total Amount</TableHead>
-                  <TableHead>Amount Paid</TableHead>
-                  <TableHead>Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {invoices.map((invoice) => (
-                  <TableRow key={invoice.id}>
-                    <TableCell>
-                      {invoice.visits?.patients.first_name}{' '}
-                      {invoice.visits?.patients.last_name}
-                    </TableCell>
-                    <TableCell>
-                      {invoice.visits ? formatDate(invoice.visits.visit_date) : 'N/A'}
-                    </TableCell>
-                    <TableCell>
-                      {formatCurrency(invoice.total_amount, currencyCode)}
-                    </TableCell>
-                    <TableCell>
-                      {formatCurrency(invoice.amount_paid, currencyCode)}
-                    </TableCell>
-                    <TableCell>
-                      <span
-                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusBadgeColor(
-                          invoice.status
-                        )}`}
-                      >
-                        {invoice.status}
-                      </span>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <p className="text-muted-foreground">Loading invoices...</p>
+                </div>
+              ) : !invoices || invoices.length === 0 ? (
+                <p className="text-muted-foreground">No invoices found</p>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Patient Name</TableHead>
+                      <TableHead>Visit Date</TableHead>
+                      <TableHead>Total Amount</TableHead>
+                      <TableHead>Amount Paid</TableHead>
+                      <TableHead>Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {invoices.map((invoice) => (
+                      <TableRow key={invoice.id}>
+                        <TableCell>
+                          {invoice.visits?.patients.first_name}{' '}
+                          {invoice.visits?.patients.last_name}
+                        </TableCell>
+                        <TableCell>
+                          {invoice.visits ? formatDate(invoice.visits.visit_date) : 'N/A'}
+                        </TableCell>
+                        <TableCell>
+                          {formatCurrency(invoice.total_amount, currencyCode)}
+                        </TableCell>
+                        <TableCell>
+                          {formatCurrency(invoice.amount_paid, currencyCode)}
+                        </TableCell>
+                        <TableCell>
+                          <span
+                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusBadgeColor(
+                              invoice.status
+                            )}`}
+                          >
+                            {invoice.status}
+                          </span>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
 
-          {!isLoading && invoices.length > 0 && (
-            <Pagination
-              currentPage={currentPage}
-              totalItems={totalCount}
-              pageSize={pageSize}
-              onPageChange={setCurrentPage}
-            />
-          )}
-        </CardContent>
-      </Card>
+              {!isLoading && invoices.length > 0 && (
+                <Pagination
+                  currentPage={currentPage}
+                  totalItems={totalCount}
+                  pageSize={pageSize}
+                  onPageChange={setCurrentPage}
+                />
+              )}
+            </CardContent>
+          </Card>
+        </>
       )}
-    </div>
+    </DashboardLayout>
   );
 }

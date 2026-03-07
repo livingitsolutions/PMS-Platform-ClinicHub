@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useSubscription } from '@/features/billing/hooks/useSubscription';
 import { BillingPortalButton } from '@/features/billing/components/BillingPortalButton';
+import { DashboardLayout, PageHeader } from '@/components/layout/DashboardLayout';
 
 interface Clinic {
   id: string;
@@ -68,48 +69,50 @@ export function SettingsPage() {
 
   if (!clinicId) {
     return (
-      <div className="p-8">
+      <DashboardLayout>
         <p className="text-muted-foreground">
           Please select a clinic to view settings
         </p>
-      </div>
+      </DashboardLayout>
     );
   }
 
   if (!canManageSettings) {
     return (
-      <div className="p-8">
+      <DashboardLayout>
         <p className="text-muted-foreground">
           You do not have permission to access clinic settings
         </p>
-      </div>
+      </DashboardLayout>
     );
   }
 
   if (isLoading) {
     return (
-      <div className="p-8">
+      <DashboardLayout>
         <p className="text-muted-foreground">Loading clinic information...</p>
-      </div>
+      </DashboardLayout>
     );
   }
 
   if (!clinic) {
     return (
-      <div className="p-8">
+      <DashboardLayout>
         <p className="text-muted-foreground">Clinic not found</p>
-      </div>
+      </DashboardLayout>
     );
   }
 
   return (
-    <div className="p-8">
+    <DashboardLayout>
+      <PageHeader
+        title="Clinic Settings"
+        subtitle="View and manage your clinic information"
+      />
+
       <Card>
         <CardHeader>
-          <CardTitle>Clinic Settings</CardTitle>
-          <CardDescription>
-            View and manage your clinic information
-          </CardDescription>
+          <CardTitle>General</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-6">
@@ -190,6 +193,6 @@ export function SettingsPage() {
           )}
         </CardContent>
       </Card>
-    </div>
+    </DashboardLayout>
   );
 }

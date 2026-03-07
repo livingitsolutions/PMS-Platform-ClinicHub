@@ -17,6 +17,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { CreateProcedureDialog } from '../components/CreateProcedureDialog';
 import { QueryErrorAlert } from '@/components/system/ErrorAlert';
+import { DashboardLayout, PageHeader } from '@/components/layout/DashboardLayout';
 
 interface Procedure {
   id: string;
@@ -73,14 +74,16 @@ export function ProceduresPage() {
 
   if (!clinicId) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <p className="text-muted-foreground">Please select a clinic first</p>
-      </div>
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-full">
+          <p className="text-muted-foreground">Please select a clinic first</p>
+        </div>
+      </DashboardLayout>
     );
   }
 
   return (
-    <div className="container mx-auto py-8">
+    <DashboardLayout>
       {error && (
         <div className="mb-6">
           <QueryErrorAlert error={error} onRetry={() => refetch()} />
@@ -89,88 +92,86 @@ export function ProceduresPage() {
 
       {!error && (
         <>
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Procedures</h1>
-          <p className="text-muted-foreground mt-1">
-            Manage clinic procedures and pricing
-          </p>
-        </div>
-        <Button
-          onClick={() => setDialogOpen(true)}
-          disabled={!canManageProcedures}
-        >
-          Create Procedure
-        </Button>
-      </div>
+          <PageHeader
+            title="Procedures"
+            subtitle="Manage clinic procedures and pricing"
+            actions={
+              <Button
+                onClick={() => setDialogOpen(true)}
+                disabled={!canManageProcedures}
+              >
+                Create Procedure
+              </Button>
+            }
+          />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>All Procedures</CardTitle>
-          <CardDescription>
-            View and manage available procedures for this clinic
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <p className="text-muted-foreground">Loading procedures...</p>
-            </div>
-          ) : procedures && procedures.length === 0 ? (
-            <div className="flex items-center justify-center py-12">
-              <p className="text-muted-foreground">
-                No procedures found. Create your first procedure to get started.
-              </p>
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead className="text-right">Base Cost</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {procedures?.map((procedure) => (
-                  <TableRow key={procedure.id}>
-                    <TableCell className="font-medium">
-                      {procedure.name}
-                    </TableCell>
-                    <TableCell className="max-w-md">
-                      {procedure.description || (
-                        <span className="text-muted-foreground italic">
-                          No description
-                        </span>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right font-medium">
-                      {formatCurrency(procedure.base_cost, currencyCode)}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
+          <Card>
+            <CardHeader>
+              <CardTitle>All Procedures</CardTitle>
+              <CardDescription>
+                View and manage available procedures for this clinic
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <p className="text-muted-foreground">Loading procedures...</p>
+                </div>
+              ) : procedures && procedures.length === 0 ? (
+                <div className="flex items-center justify-center py-12">
+                  <p className="text-muted-foreground">
+                    No procedures found. Create your first procedure to get started.
+                  </p>
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Description</TableHead>
+                      <TableHead className="text-right">Base Cost</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {procedures?.map((procedure) => (
+                      <TableRow key={procedure.id}>
+                        <TableCell className="font-medium">
+                          {procedure.name}
+                        </TableCell>
+                        <TableCell className="max-w-md">
+                          {procedure.description || (
+                            <span className="text-muted-foreground italic">
+                              No description
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right font-medium">
+                          {formatCurrency(procedure.base_cost, currencyCode)}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
 
-          {!isLoading && procedures.length > 0 && (
-            <Pagination
-              currentPage={currentPage}
-              totalItems={totalCount}
-              pageSize={pageSize}
-              onPageChange={setCurrentPage}
-            />
-          )}
-        </CardContent>
-      </Card>
+              {!isLoading && procedures.length > 0 && (
+                <Pagination
+                  currentPage={currentPage}
+                  totalItems={totalCount}
+                  pageSize={pageSize}
+                  onPageChange={setCurrentPage}
+                />
+              )}
+            </CardContent>
+          </Card>
 
-      <CreateProcedureDialog
-        clinicId={clinicId}
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-      />
-      </>
+          <CreateProcedureDialog
+            clinicId={clinicId}
+            open={dialogOpen}
+            onOpenChange={setDialogOpen}
+          />
+        </>
       )}
-    </div>
+    </DashboardLayout>
   );
 }

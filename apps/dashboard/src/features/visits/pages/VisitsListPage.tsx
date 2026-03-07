@@ -16,6 +16,7 @@ import {
 import { QueryErrorAlert } from '@/components/system/ErrorAlert';
 import { ExportCSVButton } from '@/components/system/ExportCSVButton';
 import { CreateWalkInVisitDialog } from '../components/CreateWalkInVisitDialog';
+import { DashboardLayout, PageHeader } from '@/components/layout/DashboardLayout';
 
 interface VisitListItem {
   id: string;
@@ -25,7 +26,7 @@ interface VisitListItem {
   first_name: string;
   last_name: string;
   } | null;
-  
+
   providers: {
     name: string;
   } | null;
@@ -154,20 +155,20 @@ export function VisitsListPage() {
 
   if (!clinicId) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <p className="text-muted-foreground">Please select a clinic first</p>
-      </div>
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-full">
+          <p className="text-muted-foreground">Please select a clinic first</p>
+        </div>
+      </DashboardLayout>
     );
   }
 
   return (
-    <div className="container mx-auto py-8">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold">Visits</h1>
-        <p className="text-muted-foreground mt-1">
-          View and manage patient visits
-        </p>
-      </div>
+    <DashboardLayout>
+      <PageHeader
+        title="Visits"
+        subtitle="View and manage patient visits"
+      />
 
       {error && (
         <div className="mb-6">
@@ -177,107 +178,107 @@ export function VisitsListPage() {
 
       {!error && (
         <>
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>All Visits</CardTitle>
-              <CardDescription>
-                Click on any visit to view details
-              </CardDescription>
-            </div>
-            <div className="flex items-center gap-2">
-              <CreateWalkInVisitDialog onCreated={() => refetch()} />
-              <ExportCSVButton label="Export Visits" filename="visits" data={exportData} />
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <p className="text-muted-foreground">Loading visits...</p>
-            </div>
-          ) : visits && visits.length === 0 ? (
-            <div className="flex items-center justify-center py-12">
-              <p className="text-muted-foreground">No visits found</p>
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Time</TableHead>
-                  <TableHead>Patient</TableHead>
-                  <TableHead>Provider</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Invoice Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {visits?.map((visit) => (
-                  <TableRow
-                    key={visit.id}
-                    onClick={() => handleRowClick(visit.id)}
-                    className="cursor-pointer hover:bg-muted/50 transition-colors"
-                  >
-                    <TableCell className="font-medium">
-                      {formatDate(visit.visit_date)}
-                    </TableCell>
-                    <TableCell>
-                      {formatTime(visit.visit_date)}
-                    </TableCell>
-                    <TableCell>
-                      {visit.patients
-  ? `${visit.patients.first_name} ${visit.patients.last_name}`
-  : 'Unknown'}
-                    </TableCell>
-                    <TableCell>
-                     {visit.providers
-  ? visit.providers.name
-  : 'Unknown'}
-                    </TableCell>
-                    <TableCell>
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeClass(
-                          visit.status
-                        )}`}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>All Visits</CardTitle>
+                  <CardDescription>
+                    Click on any visit to view details
+                  </CardDescription>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CreateWalkInVisitDialog onCreated={() => refetch()} />
+                  <ExportCSVButton label="Export Visits" filename="visits" data={exportData} />
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <p className="text-muted-foreground">Loading visits...</p>
+                </div>
+              ) : visits && visits.length === 0 ? (
+                <div className="flex items-center justify-center py-12">
+                  <p className="text-muted-foreground">No visits found</p>
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Time</TableHead>
+                      <TableHead>Patient</TableHead>
+                      <TableHead>Provider</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Invoice Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {visits?.map((visit) => (
+                      <TableRow
+                        key={visit.id}
+                        onClick={() => handleRowClick(visit.id)}
+                        className="cursor-pointer hover:bg-muted/50 transition-colors"
                       >
-                        {formatStatus(visit.status)}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      {visit.invoices && visit.invoices.length > 0 ? (
-                        <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getInvoiceStatusBadgeClass(
-                            visit.invoices[0].status
-                          )}`}
-                        >
-                          {formatStatus(visit.invoices[0].status)}
-                        </span>
-                      ) : (
-                        <span className="text-muted-foreground text-sm">
-                          No invoice
-                        </span>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
+                        <TableCell className="font-medium">
+                          {formatDate(visit.visit_date)}
+                        </TableCell>
+                        <TableCell>
+                          {formatTime(visit.visit_date)}
+                        </TableCell>
+                        <TableCell>
+                          {visit.patients
+                            ? `${visit.patients.first_name} ${visit.patients.last_name}`
+                            : 'Unknown'}
+                        </TableCell>
+                        <TableCell>
+                          {visit.providers
+                            ? visit.providers.name
+                            : 'Unknown'}
+                        </TableCell>
+                        <TableCell>
+                          <span
+                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeClass(
+                              visit.status
+                            )}`}
+                          >
+                            {formatStatus(visit.status)}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          {visit.invoices && visit.invoices.length > 0 ? (
+                            <span
+                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getInvoiceStatusBadgeClass(
+                                visit.invoices[0].status
+                              )}`}
+                            >
+                              {formatStatus(visit.invoices[0].status)}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground text-sm">
+                              No invoice
+                            </span>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
 
-          {!isLoading && visits.length > 0 && (
-            <Pagination
-              currentPage={currentPage}
-              totalItems={totalCount}
-              pageSize={pageSize}
-              onPageChange={setCurrentPage}
-            />
-          )}
-        </CardContent>
-      </Card>
-      </>
+              {!isLoading && visits.length > 0 && (
+                <Pagination
+                  currentPage={currentPage}
+                  totalItems={totalCount}
+                  pageSize={pageSize}
+                  onPageChange={setCurrentPage}
+                />
+              )}
+            </CardContent>
+          </Card>
+        </>
       )}
-    </div>
+    </DashboardLayout>
   );
 }

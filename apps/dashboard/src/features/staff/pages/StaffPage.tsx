@@ -7,6 +7,7 @@ import { StaffTable } from '../components/StaffTable';
 import { InviteStaffDialog } from '../components/InviteStaffDialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { DashboardLayout, PageHeader } from '@/components/layout/DashboardLayout';
 
 export function StaffPage() {
   const clinicId = useClinicStore((s) => s.clinicId);
@@ -18,20 +19,23 @@ export function StaffPage() {
 
   if (!clinicId) {
     return (
-      <div className="p-8">
+      <DashboardLayout>
         <p className="text-muted-foreground">Please select a clinic.</p>
-      </div>
+      </DashboardLayout>
     );
   }
 
   return (
-    <div className="p-8">
+    <DashboardLayout>
+      <PageHeader
+        title="Staff Members"
+        subtitle="Manage clinic staff and permissions"
+        actions={canManageStaff ? <Button onClick={() => setInviteOpen(true)}>Invite Staff</Button> : undefined}
+      />
+
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader>
           <CardTitle>Staff Members</CardTitle>
-          {canManageStaff && (
-            <Button onClick={() => setInviteOpen(true)}>Invite Staff</Button>
-          )}
         </CardHeader>
         <CardContent>
           {isLoading && (
@@ -61,6 +65,6 @@ export function StaffPage() {
       </Card>
 
       <InviteStaffDialog open={inviteOpen} onOpenChange={setInviteOpen} />
-    </div>
+    </DashboardLayout>
   );
 }

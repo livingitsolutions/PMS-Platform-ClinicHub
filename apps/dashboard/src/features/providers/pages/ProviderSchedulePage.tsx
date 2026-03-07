@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/select';
 import { AvailabilityEditor } from '../components/AvailabilityEditor';
 import { Label } from '@/components/ui/label';
+import { DashboardLayout, PageHeader } from '@/components/layout/DashboardLayout';
 
 interface Provider {
   id: string;
@@ -45,20 +46,20 @@ export function ProviderSchedulePage() {
 
   if (!clinicId) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <p className="text-gray-500">Please select a clinic first.</p>
-      </div>
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-96">
+          <p className="text-gray-500">Please select a clinic first.</p>
+        </div>
+      </DashboardLayout>
     );
   }
 
   return (
-    <div className="container mx-auto p-6 max-w-5xl">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">Provider Schedule</h1>
-        <p className="text-gray-600">
-          Manage provider availability and working hours
-        </p>
-      </div>
+    <DashboardLayout>
+      <PageHeader
+        title="Provider Schedule"
+        subtitle="Manage provider availability and working hours"
+      />
 
       <Card className="mb-6">
         <CardHeader>
@@ -116,6 +117,6 @@ export function ProviderSchedulePage() {
           </CardContent>
         </Card>
       )}
-    </div>
+    </DashboardLayout>
   );
 }

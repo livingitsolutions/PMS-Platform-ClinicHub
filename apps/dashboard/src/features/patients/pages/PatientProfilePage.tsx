@@ -13,6 +13,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { DashboardLayout, PageHeader } from '@/components/layout/DashboardLayout';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 
 interface Visit {
   id: string;
@@ -91,25 +94,25 @@ export function PatientProfilePage() {
 
   if (!patientId || !clinicId) {
     return (
-      <div className="p-8">
+      <DashboardLayout>
         <p className="text-muted-foreground">Invalid patient ID</p>
-      </div>
+      </DashboardLayout>
     );
   }
 
   if (isLoading) {
     return (
-      <div className="p-8">
+      <DashboardLayout>
         <p className="text-muted-foreground">Loading patient...</p>
-      </div>
+      </DashboardLayout>
     );
   }
 
   if (!patient) {
     return (
-      <div className="p-8">
+      <DashboardLayout>
         <p className="text-muted-foreground">Patient not found</p>
-      </div>
+      </DashboardLayout>
     );
   }
 
@@ -122,92 +125,105 @@ export function PatientProfilePage() {
   }
 
   return (
-    <div className="p-8 space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Patient Information</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">First Name</p>
-              <p className="text-base">{patient.first_name}</p>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Last Name</p>
-              <p className="text-base">{patient.last_name}</p>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Phone</p>
-              <p className="text-base">{patient.phone || 'N/A'}</p>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Email</p>
-              <p className="text-base">{patient.email || 'N/A'}</p>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Date of Birth</p>
-              <p className="text-base">{patient.date_of_birth}</p>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Gender</p>
-              <p className="text-base">{patient.gender}</p>
-            </div>
-            <div className="col-span-2">
-              <p className="text-sm font-medium text-muted-foreground">Address</p>
-              <p className="text-base">{patient.address || 'N/A'}</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+    <DashboardLayout>
+      <Button
+        variant="ghost"
+        onClick={() => navigate(-1)}
+        className="mb-4"
+      >
+        <ArrowLeft className="size-4 mr-2" />
+        Back
+      </Button>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Visit History</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isLoadingVisits ? (
-            <div className="flex items-center justify-center py-12">
-              <p className="text-muted-foreground">Loading visits...</p>
+      <PageHeader title={`${patient.first_name} ${patient.last_name}`} />
+
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Patient Information</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">First Name</p>
+                <p className="text-base">{patient.first_name}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Last Name</p>
+                <p className="text-base">{patient.last_name}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Phone</p>
+                <p className="text-base">{patient.phone || 'N/A'}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Email</p>
+                <p className="text-base">{patient.email || 'N/A'}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Date of Birth</p>
+                <p className="text-base">{patient.date_of_birth}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Gender</p>
+                <p className="text-base">{patient.gender}</p>
+              </div>
+              <div className="col-span-2">
+                <p className="text-sm font-medium text-muted-foreground">Address</p>
+                <p className="text-base">{patient.address || 'N/A'}</p>
+              </div>
             </div>
-          ) : visits && visits.length === 0 ? (
-            <div className="flex items-center justify-center py-12">
-              <p className="text-muted-foreground">No visits found</p>
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Visit Date</TableHead>
-                  <TableHead>Provider</TableHead>
-                  <TableHead>Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {visits?.map((visit) => (
-                  <TableRow
-                    key={visit.id}
-                    className="cursor-pointer hover:bg-muted/50"
-                    onClick={() => navigate(`/visits/${visit.id}`)}
-                  >
-                    <TableCell>
-                      {formatDate(visit.visit_date)}
-                    </TableCell>
-                    <TableCell>
-                      {visit.providers?.name || 'N/A'}
-                    </TableCell>
-                    <TableCell className="capitalize">
-                      {visit.status.replace('_', ' ')}
-                    </TableCell>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Visit History</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isLoadingVisits ? (
+              <div className="flex items-center justify-center py-12">
+                <p className="text-muted-foreground">Loading visits...</p>
+              </div>
+            ) : visits && visits.length === 0 ? (
+              <div className="flex items-center justify-center py-12">
+                <p className="text-muted-foreground">No visits found</p>
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Visit Date</TableHead>
+                    <TableHead>Provider</TableHead>
+                    <TableHead>Status</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+                </TableHeader>
+                <TableBody>
+                  {visits?.map((visit) => (
+                    <TableRow
+                      key={visit.id}
+                      className="cursor-pointer hover:bg-muted/50"
+                      onClick={() => navigate(`/visits/${visit.id}`)}
+                    >
+                      <TableCell>
+                        {formatDate(visit.visit_date)}
+                      </TableCell>
+                      <TableCell>
+                        {visit.providers?.name || 'N/A'}
+                      </TableCell>
+                      <TableCell className="capitalize">
+                        {visit.status.replace('_', ' ')}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </CardContent>
+        </Card>
 
-      <PatientTimeline patientId={patientId} clinicId={clinicId} />
-    </div>
+        <PatientTimeline patientId={patientId} clinicId={clinicId} />
+      </div>
+    </DashboardLayout>
   );
 }

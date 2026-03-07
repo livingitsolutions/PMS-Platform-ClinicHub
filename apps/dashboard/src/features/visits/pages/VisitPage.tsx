@@ -22,6 +22,7 @@ import { VisitSummaryPDF } from '@/features/documents/components/VisitSummaryPDF
 import { InvoicePDF } from '@/features/documents/components/InvoicePDF';
 import { getVisitProceduresForPDF } from '@/features/documents/api/documentDataApi';
 import { useClinicStore } from '@/store/clinic-store';
+import { DashboardLayout, PageHeader } from '@/components/layout/DashboardLayout';
 
 export function VisitPage() {
   const { visitId } = useParams<{ visitId: string }>();
@@ -37,18 +38,22 @@ export function VisitPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg text-muted-foreground">Loading visit...</div>
-      </div>
+      <DashboardLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-lg text-muted-foreground">Loading visit...</div>
+        </div>
+      </DashboardLayout>
     );
   }
 
   if (error || !visit) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen gap-4">
-        <div className="text-lg text-destructive">Failed to load visit</div>
-        <Button onClick={() => navigate(-1)}>Go Back</Button>
-      </div>
+      <DashboardLayout>
+        <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+          <div className="text-lg text-destructive">Failed to load visit</div>
+          <Button onClick={() => navigate(-1)}>Go Back</Button>
+        </div>
+      </DashboardLayout>
     );
   }
 
@@ -128,30 +133,26 @@ export function VisitPage() {
   };
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-7xl">
-      <div className="mb-6">
-        <Button
-          variant="ghost"
-          onClick={() => navigate(-1)}
-          className="mb-4"
-        >
-          <ArrowLeft className="size-4 mr-2" />
-          Back
-        </Button>
+    <DashboardLayout>
+      <Button
+        variant="ghost"
+        onClick={() => navigate(-1)}
+        className="mb-4"
+      >
+        <ArrowLeft className="size-4 mr-2" />
+        Back
+      </Button>
 
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">Visit Details</h1>
-            <p className="text-muted-foreground">
-              {visitDate.toLocaleDateString('en-US', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-              })}
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
+      <PageHeader
+        title="Visit Details"
+        subtitle={visitDate.toLocaleDateString('en-US', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        })}
+        actions={
+          <>
             <Button
               variant="outline"
               onClick={handleDownloadVisitSummary}
@@ -173,9 +174,9 @@ export function VisitPage() {
             >
               {visit.status.replace('_', ' ').toUpperCase()}
             </div>
-          </div>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       <div className="grid gap-6 md:grid-cols-2 mb-6">
         <Card>
@@ -319,6 +320,6 @@ export function VisitPage() {
           maxAmount={Number(invoice.total_amount) - Number(invoice.amount_paid)}
         />
       )}
-    </div>
+    </DashboardLayout>
   );
 }

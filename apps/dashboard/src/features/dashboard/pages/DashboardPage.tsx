@@ -5,7 +5,7 @@ import { RevenueChart } from '@/features/dashboard/components/RevenueChart';
 import { TopProceduresCard } from '@/features/dashboard/components/TopProceduresCard';
 import { TopProvidersCard } from '@/features/dashboard/components/TopProvidersCard';
 import { SubscriptionStatus } from '@/features/billing/components/SubscriptionStatus';
-import { AppLayout } from '@/components/layout/AppLayout';
+import { DashboardLayout, PageHeader } from '@/components/layout/DashboardLayout';
 import { QueryErrorAlert } from '@/components/system/ErrorAlert';
 
 export function DashboardPage() {
@@ -14,143 +14,130 @@ export function DashboardPage() {
 
   if (!clinicId) {
     return (
-      <AppLayout>
-        <div className="mx-auto max-w-7xl px-4 py-8">
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-          <p className="mt-4 text-gray-600">Please select a clinic to view dashboard.</p>
-        </div>
-      </AppLayout>
+      <DashboardLayout>
+        <PageHeader title="Dashboard" />
+        <p className="text-gray-500">Please select a clinic to view the dashboard.</p>
+      </DashboardLayout>
     );
   }
 
   return (
-    <AppLayout>
-      <div className="mx-auto max-w-7xl px-4 py-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Dashboard</h1>
+    <DashboardLayout>
+      <PageHeader title="Dashboard" subtitle="Overview of your clinic's performance" />
 
-        {error && (
-          <div className="mb-6">
-            <QueryErrorAlert error={error} onRetry={() => refetch()} />
-          </div>
-        )}
+      <div className="mb-6">
+        <SubscriptionStatus />
+      </div>
 
-        {!error && (
+      {error && (
+        <div className="mb-6">
+          <QueryErrorAlert error={error} onRetry={() => refetch()} />
+        </div>
+      )}
+
+      {!error && (
         <>
-
-        <div className="mb-8">
-          <SubscriptionStatus />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm font-medium text-gray-600">
-                Today's Visits
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-4xl font-bold text-gray-900">
-                {isLoading ? '...' : data?.totalVisits || 0}
-              </div>
-              <CardDescription className="mt-2">
-                Completed today
-              </CardDescription>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm font-medium text-gray-600">
-                Today's Revenue
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-4xl font-bold text-gray-900">
-                {isLoading
-                  ? '...'
-                  : `$${(data?.totalRevenue || 0).toLocaleString('en-US', {
-                      minimumFractionDigits: 2,
-                    })}`}
-              </div>
-              <CardDescription className="mt-2">
-                Payments received
-              </CardDescription>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm font-medium text-gray-600">
-                Outstanding Balance
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-4xl font-bold text-gray-900">
-                {isLoading
-                  ? '...'
-                  : `$${(data?.outstandingInvoices || 0).toLocaleString('en-US', {
-                      minimumFractionDigits: 2,
-                    })}`}
-              </div>
-              <CardDescription className="mt-2">
-                Unpaid invoices
-              </CardDescription>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm font-medium text-gray-600">
-                New Patients
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-4xl font-bold text-gray-900">
-                {isLoading ? '...' : data?.newPatients || 0}
-              </div>
-              <CardDescription className="mt-2">
-                Registered today
-              </CardDescription>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="mb-8">
-          {isLoading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <Card>
-              <CardContent className="pt-6">
-                <p className="text-center text-muted-foreground">Loading revenue data...</p>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  Today's Visits
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-gray-900">
+                  {isLoading ? '—' : data?.totalVisits || 0}
+                </div>
+                <CardDescription className="mt-1 text-xs">Completed today</CardDescription>
               </CardContent>
             </Card>
-          ) : (
-            <RevenueChart data={data?.monthlyRevenue || []} />
-          )}
-        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {isLoading ? (
-            <>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  Today's Revenue
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-gray-900">
+                  {isLoading
+                    ? '—'
+                    : `$${(data?.totalRevenue || 0).toLocaleString('en-US', {
+                        minimumFractionDigits: 2,
+                      })}`}
+                </div>
+                <CardDescription className="mt-1 text-xs">Payments received</CardDescription>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  Outstanding Balance
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-amber-600">
+                  {isLoading
+                    ? '—'
+                    : `$${(data?.outstandingInvoices || 0).toLocaleString('en-US', {
+                        minimumFractionDigits: 2,
+                      })}`}
+                </div>
+                <CardDescription className="mt-1 text-xs">Unpaid invoices</CardDescription>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  New Patients
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-gray-900">
+                  {isLoading ? '—' : data?.newPatients || 0}
+                </div>
+                <CardDescription className="mt-1 text-xs">Registered today</CardDescription>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="mb-6">
+            {isLoading ? (
               <Card>
-                <CardContent className="pt-6">
-                  <p className="text-center text-muted-foreground">Loading procedures...</p>
+                <CardContent className="pt-6 pb-6">
+                  <p className="text-center text-muted-foreground text-sm">Loading revenue data...</p>
                 </CardContent>
               </Card>
-              <Card>
-                <CardContent className="pt-6">
-                  <p className="text-center text-muted-foreground">Loading providers...</p>
-                </CardContent>
-              </Card>
-            </>
-          ) : (
-            <>
-              <TopProceduresCard procedures={data?.topProcedures || []} />
-              <TopProvidersCard providers={data?.topProviders || []} />
-            </>
-          )}
-        </div>
+            ) : (
+              <RevenueChart data={data?.monthlyRevenue || []} />
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {isLoading ? (
+              <>
+                <Card>
+                  <CardContent className="pt-6">
+                    <p className="text-center text-muted-foreground text-sm">Loading procedures...</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-6">
+                    <p className="text-center text-muted-foreground text-sm">Loading providers...</p>
+                  </CardContent>
+                </Card>
+              </>
+            ) : (
+              <>
+                <TopProceduresCard procedures={data?.topProcedures || []} />
+                <TopProvidersCard providers={data?.topProviders || []} />
+              </>
+            )}
+          </div>
         </>
-        )}
-      </div>
-    </AppLayout>
+      )}
+    </DashboardLayout>
   );
 }

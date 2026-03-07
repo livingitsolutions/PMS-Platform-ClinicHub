@@ -1,5 +1,5 @@
 import { useClinicStore } from '@/store/clinic-store';
-import { AppLayout } from '@/components/layout/AppLayout';
+import { DashboardLayout, PageHeader } from '@/components/layout/DashboardLayout';
 import { useDashboardStats } from '@/features/dashboard/hooks/useDashboardStats';
 import { RevenueReport } from '../components/RevenueReport';
 import { ProviderPerformanceReport } from '../components/ProviderPerformanceReport';
@@ -15,24 +15,20 @@ export function ReportsPage() {
 
   if (!clinicId) {
     return (
-      <AppLayout>
+      <DashboardLayout>
         <div className="mx-auto max-w-7xl px-4 py-8">
           <p className="text-muted-foreground">Please select a clinic.</p>
         </div>
-      </AppLayout>
+      </DashboardLayout>
     );
   }
 
   return (
-    <AppLayout>
-      <div className="mx-auto max-w-7xl px-4 py-8">
-        <div className="mb-8 flex items-start justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Reports</h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Analytics for the last 30 days
-            </p>
-          </div>
+    <DashboardLayout>
+      <PageHeader
+        title="Reports"
+        subtitle="Analytics for the last 30 days"
+        actions={
           <ExportCSVButton
             label="Export Revenue"
             filename="revenue-report"
@@ -41,37 +37,37 @@ export function ReportsPage() {
               revenue: r.revenue,
             }))}
           />
+        }
+      />
+
+      {error && (
+        <div className="mb-6">
+          <QueryErrorAlert error={error} onRetry={() => refetch()} />
         </div>
+      )}
 
-        {error && (
-          <div className="mb-6">
-            <QueryErrorAlert error={error} onRetry={() => refetch()} />
-          </div>
-        )}
+      {!error && (
+        <div className="space-y-8">
+          <RevenueReport
+            data={data?.monthlyRevenue || []}
+            isLoading={isLoading}
+            currencyCode={currencyCode}
+          />
 
-        {!error && (
-          <div className="space-y-8">
-            <RevenueReport
-              data={data?.monthlyRevenue || []}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <ProviderPerformanceReport
+              providers={data?.topProviders || []}
               isLoading={isLoading}
               currencyCode={currencyCode}
             />
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <ProviderPerformanceReport
-                providers={data?.topProviders || []}
-                isLoading={isLoading}
-                currencyCode={currencyCode}
-              />
-              <ProcedureReport
-                procedures={data?.topProcedures || []}
-                isLoading={isLoading}
-                currencyCode={currencyCode}
-              />
-            </div>
+            <ProcedureReport
+              procedures={data?.topProcedures || []}
+              isLoading={isLoading}
+              currencyCode={currencyCode}
+            />
           </div>
-        )}
-      </div>
-    </AppLayout>
+        </div>
+      )}
+    </DashboardLayout>
   );
 }

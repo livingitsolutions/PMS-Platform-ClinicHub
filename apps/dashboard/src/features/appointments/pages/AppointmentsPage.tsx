@@ -13,6 +13,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getPatients } from '@/features/patients/api/patientsApi';
 import type { TimeSlot } from '../hooks/useAvailableSlots';
 import { QueryErrorAlert } from '@/components/system/ErrorAlert';
+import { DashboardLayout, PageHeader } from '@/components/layout/DashboardLayout';
 
 export function AppointmentsPage() {
   const { clinicId } = useClinicStore();
@@ -49,7 +50,7 @@ export function AppointmentsPage() {
 
   if (!clinicId) {
     return (
-      <div className="p-8">
+      <DashboardLayout>
         <Card>
           <CardContent className="pt-6">
             <p className="text-gray-500 text-center">
@@ -57,32 +58,32 @@ export function AppointmentsPage() {
             </p>
           </CardContent>
         </Card>
-      </div>
+      </DashboardLayout>
     );
   }
 
   return (
-    <div className="p-8">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Appointments</h1>
-          <p className="text-gray-600 mt-1">Schedule and manage appointments</p>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant={viewMode === 'timeline' ? 'default' : 'outline'}
-            onClick={() => setViewMode('timeline')}
-          >
-            Timeline View
-          </Button>
-          <Button
-            variant={viewMode === 'calendar' ? 'default' : 'outline'}
-            onClick={() => setViewMode('calendar')}
-          >
-            Calendar View
-          </Button>
-        </div>
-      </div>
+    <DashboardLayout>
+      <PageHeader
+        title="Appointments"
+        subtitle="Schedule and manage appointments"
+        actions={
+          <>
+            <Button
+              variant={viewMode === 'timeline' ? 'default' : 'outline'}
+              onClick={() => setViewMode('timeline')}
+            >
+              Timeline View
+            </Button>
+            <Button
+              variant={viewMode === 'calendar' ? 'default' : 'outline'}
+              onClick={() => setViewMode('calendar')}
+            >
+              Calendar View
+            </Button>
+          </>
+        }
+      />
 
       {providersError && (
         <div className="mb-6">
@@ -201,6 +202,6 @@ export function AppointmentsPage() {
           patients={patients || []}
         />
       )}
-    </div>
+    </DashboardLayout>
   );
 }

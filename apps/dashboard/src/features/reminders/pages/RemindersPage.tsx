@@ -1,14 +1,13 @@
 import { RemindersPanel } from '../components/RemindersPanel';
+import { DashboardLayout, PageHeader } from '@/components/layout/DashboardLayout';
 
 export function RemindersPage() {
   return (
-    <div className="container mx-auto py-8">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold">Appointment Reminders</h1>
-        <p className="text-muted-foreground mt-1">
-          Manage automated appointment reminders sent to patients
-        </p>
-      </div>
+    <DashboardLayout>
+      <PageHeader
+        title="Appointment Reminders"
+        subtitle="Manage automated appointment reminders sent to patients"
+      />
 
       <RemindersPanel />
 
@@ -47,6 +46,6 @@ export function RemindersPage() {
           </li>
         </ul>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }
