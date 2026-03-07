@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { createNotification } from '@/features/notifications/api/notificationsApi';
+import { assertNotDemoMode } from '@/lib/demoMode';
 
 export interface Appointment {
   id: string;
@@ -91,6 +92,7 @@ export async function createAppointment(
   clinicId: string,
   payload: CreateAppointmentPayload
 ): Promise<Appointment> {
+  assertNotDemoMode();
   const { data, error } = await supabase
     .from('appointments')
     .insert({
@@ -153,6 +155,7 @@ export async function updateAppointment(
   appointmentId: string,
   payload: UpdateAppointmentPayload
 ): Promise<Appointment> {
+  assertNotDemoMode();
   const { data, error } = await supabase
     .from('appointments')
     .update(payload)
@@ -166,6 +169,7 @@ export async function updateAppointment(
 }
 
 export async function deleteAppointment(appointmentId: string): Promise<void> {
+  assertNotDemoMode();
   const { error } = await supabase
     .from('appointments')
     .delete()

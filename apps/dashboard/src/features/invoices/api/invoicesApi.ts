@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import { logAuditEvent, AuditActions, EntityTypes } from '@/lib/audit';
 import { createNotification } from '@/features/notifications/api/notificationsApi';
+import { assertNotDemoMode } from '@/lib/demoMode';
 
 const INVOICE_SELECT = `
   id,
@@ -149,6 +150,7 @@ export async function getPaymentsByInvoice(invoiceId: string): Promise<Payment[]
 }
 
 export async function createPayment(payload: CreatePaymentPayload): Promise<Payment> {
+  assertNotDemoMode();
   const { data: invoice, error: invoiceError } = await supabase
     .from('invoices')
     .select('clinic_id, amount_paid, total_amount')

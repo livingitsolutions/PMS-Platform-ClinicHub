@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { logAuditEvent, AuditActions, EntityTypes } from '@/lib/audit';
+import { assertNotDemoMode } from '@/lib/demoMode';
 
 export interface VisitProcedure {
   id: string;
@@ -50,6 +51,7 @@ export async function getVisitProcedures(visitId: string): Promise<VisitProcedur
 export async function createVisitProcedure(
   payload: CreateVisitProcedurePayload
 ): Promise<VisitProcedure> {
+  assertNotDemoMode();
   let finalPrice = payload.price;
 
   if (finalPrice === null || finalPrice === undefined) {
@@ -86,6 +88,7 @@ export async function updateVisitProcedure(
   id: string,
   payload: UpdateVisitProcedurePayload
 ): Promise<VisitProcedure> {
+  assertNotDemoMode();
   const updateData: Record<string, unknown> = {};
 
   if (payload.quantity !== undefined) updateData.quantity = payload.quantity;
@@ -130,6 +133,7 @@ export async function updateVisitProcedure(
 }
 
 export async function deleteVisitProcedure(id: string): Promise<void> {
+  assertNotDemoMode();
   const { error } = await supabase
     .from('visit_procedures')
     .delete()

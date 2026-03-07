@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'sonner';
 import { useAuthBootstrap } from '@/hooks/useAuthBootstrap';
 import { AuthGuard } from '@/components/auth/AuthGuard';
 import { LoginPage } from '@/features/auth/pages/LoginPage';
@@ -35,6 +36,7 @@ function App() {
 
   return (
     <>
+      <Toaster position="top-right" richColors />
       <GlobalSearchDialog />
       <Routes>
       <Route path="/" element={user ? <Navigate to="/dashboard" replace /> : <LandingPage />} />

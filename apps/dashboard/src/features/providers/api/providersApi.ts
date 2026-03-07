@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { assertNotDemoMode } from '@/lib/demoMode';
 
 export interface Provider {
   id: string;
@@ -61,6 +62,7 @@ export async function createProvider(
   clinicId: string,
   payload: CreateProviderPayload
 ): Promise<Provider> {
+  assertNotDemoMode();
   const { data, error } = await supabase
     .from('providers')
     .insert({
@@ -81,6 +83,7 @@ export async function updateProvider(
   providerId: string,
   payload: Partial<CreateProviderPayload>
 ): Promise<Provider> {
+  assertNotDemoMode();
   const cleanPayload = Object.fromEntries(
     Object.entries(payload).filter(([_, v]) => v !== undefined)
   );
@@ -101,6 +104,7 @@ export async function updateProvider(
 }
 
 export async function deleteProvider(providerId: string): Promise<void> {
+  assertNotDemoMode();
   const { error } = await supabase
     .from('providers')
     .delete()

@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import { logAuditEvent, AuditActions, EntityTypes } from '@/lib/audit';
 import { createNotification } from '@/features/notifications/api/notificationsApi';
+import { assertNotDemoMode } from '@/lib/demoMode';
 
 const VISIT_SELECT = `
   id,
@@ -138,6 +139,7 @@ export interface UpdateVisitPayload {
 }
 
 export async function updateVisit(visitId: string, payload: UpdateVisitPayload): Promise<VisitWithDetails> {
+  assertNotDemoMode();
   const { data, error } = await supabase
     .from('visits')
     .update(payload)

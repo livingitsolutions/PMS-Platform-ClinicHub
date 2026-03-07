@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { logAuditEvent, AuditActions, EntityTypes } from '@/lib/audit';
+import { assertNotDemoMode } from '@/lib/demoMode';
 
 export interface Patient {
   id: string;
@@ -74,6 +75,7 @@ export async function createPatient(
   clinicId: string,
   payload: CreatePatientPayload
 ): Promise<Patient> {
+  assertNotDemoMode();
   const { data, error } = await supabase
     .from('patients')
     .insert({
@@ -115,6 +117,7 @@ export async function updatePatient(
   patientId: string,
   payload: Partial<CreatePatientPayload>
 ): Promise<Patient> {
+  assertNotDemoMode();
   const cleanPayload = Object.fromEntries(
     Object.entries(payload).filter(([_, v]) => v !== undefined)
   );
@@ -152,6 +155,7 @@ export async function updatePatient(
 }
 
 export async function deletePatient(patientId: string, clinicId: string): Promise<void> {
+  assertNotDemoMode();
   const { error } = await supabase
     .from('patients')
     .delete()

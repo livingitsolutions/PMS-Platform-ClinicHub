@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { logAuditEvent, AuditActions, EntityTypes } from '@/lib/audit';
+import { assertNotDemoMode } from '@/lib/demoMode';
 import { VisitWithDetails } from './visitsApi';
 
 const VISIT_SELECT = `
@@ -37,6 +38,7 @@ export interface CreateWalkInVisitPayload {
 export async function createWalkInVisit(
   payload: CreateWalkInVisitPayload
 ): Promise<VisitWithDetails> {
+  assertNotDemoMode();
   const { data, error } = await supabase
     .from('visits')
     .insert({
