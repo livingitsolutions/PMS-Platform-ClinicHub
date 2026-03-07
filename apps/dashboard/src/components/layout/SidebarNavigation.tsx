@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, Calendar, FileText, DollarSign, Stethoscope, UserCog, UserRound, ChartBar as BarChart2, Settings, Bell, Database } from 'lucide-react';
+import { LayoutDashboard, Users, Calendar, FileText, DollarSign, Stethoscope, UserCog, UserRound, ChartBar as BarChart2, Settings, Bell, Database, CalendarClock } from 'lucide-react';
 import { useClinicStore } from '@/store/clinic-store';
 import { usePermissions } from '@/hooks/usePermissions';
 
@@ -17,6 +17,7 @@ const navItems: NavItem[] = [
   { name: 'Appointments', href: '/appointments', icon: Calendar },
   { name: 'Visits', href: '/visits', icon: FileText },
   { name: 'Providers', href: '/providers', icon: UserRound },
+  { name: 'Provider Schedule', href: '/providers/schedule', icon: CalendarClock },
   { name: 'Procedures', href: '/procedures', icon: Stethoscope },
   { name: 'Invoices', href: '/invoices', icon: DollarSign },
   { name: 'Reports', href: '/reports', icon: BarChart2 },
@@ -33,8 +34,10 @@ export function SidebarNavigation() {
 
   if (!clinicId) return null;
 
-  const isActive = (href: string) =>
-    location.pathname === href || location.pathname.startsWith(href + '/');
+  const isActive = (href: string) => {
+    if (href === '/providers') return location.pathname === '/providers';
+    return location.pathname === href || location.pathname.startsWith(href + '/');
+  };
 
   const visibleItems = navItems.filter((item) => {
     if (item.ownerOnly && permissions.role !== 'owner') return false;
