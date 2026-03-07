@@ -23,6 +23,7 @@ import { LandingPage } from '@/features/marketing/pages/LandingPage';
 import { PricingPage } from '@/features/marketing/pages/PricingPage';
 import { SignupPage } from '@/features/marketing/pages/SignupPage';
 import { StaffPage } from '@/features/staff/pages/StaffPage';
+import { ReportsPage } from '@/features/reports/pages/ReportsPage';
 import { useAuthStore } from '@/store/auth-store';
 
 function App() {
@@ -179,6 +180,15 @@ function App() {
         element={
           <AuthGuard>
             <StaffPage />
+          </AuthGuard>
+        }
+      />
+
+      <Route
+        path="/reports"
+        element={
+          <AuthGuard>
+            <ReportsPage />
           </AuthGuard>
         }
       />

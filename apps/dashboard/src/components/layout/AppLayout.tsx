@@ -15,6 +15,7 @@ import {
   LogOut,
   Database,
   UserCog,
+  BarChart2,
 } from 'lucide-react';
 
 interface AppLayoutProps {
@@ -34,6 +35,7 @@ export function AppLayout({ children }: AppLayoutProps) {
     { name: 'Invoices', href: '/invoices', icon: DollarSign },
     { name: 'Procedures', href: '/procedures', icon: Stethoscope },
     { name: 'Staff', href: '/staff', icon: UserCog },
+    { name: 'Reports', href: '/reports', icon: BarChart2 },
   ];
 
   const isActive = (path: string) => {
