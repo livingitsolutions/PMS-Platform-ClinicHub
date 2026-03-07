@@ -16,6 +16,9 @@ import { GlobalSearchDialog } from '@/features/search/components/GlobalSearchDia
 import { SystemBackupsPage } from '@/features/backups/pages/SystemBackupsPage';
 import { InvoicesPage } from '@/features/invoices/pages/InvoicesPage';
 import { ProvidersPage } from '@/features/providers/pages/ProvidersPage';
+import { PatientProfilePage } from '@/features/patients/pages/PatientProfilePage';
+import { SettingsPage } from '@/features/settings/pages/SettingsPage';
+import { RemindersPage } from '@/features/reminders/pages/RemindersPage';
 import { LandingPage } from '@/features/marketing/pages/LandingPage';
 import { PricingPage } from '@/features/marketing/pages/PricingPage';
 import { SignupPage } from '@/features/marketing/pages/SignupPage';
@@ -139,6 +142,33 @@ function App() {
         element={
           <AuthGuard>
             <SystemBackupsPage />
+          </AuthGuard>
+        }
+      />
+
+      <Route
+        path="/patients/:patientId"
+        element={
+          <AuthGuard>
+            <PatientProfilePage />
+          </AuthGuard>
+        }
+      />
+
+      <Route
+        path="/settings"
+        element={
+          <AuthGuard>
+            <SettingsPage />
+          </AuthGuard>
+        }
+      />
+
+      <Route
+        path="/reminders"
+        element={
+          <AuthGuard>
+            <RemindersPage />
           </AuthGuard>
         }
       />
