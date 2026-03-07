@@ -48,10 +48,21 @@ Deno.serve(async (req: Request) => {
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
-        const clinicId = session.metadata?.clinic_id;
+        let clinicId = session.metadata?.clinic_id;
+
+        if (!clinicId && session.customer) {
+          const customerId =
+            typeof session.customer === "string"
+              ? session.customer
+              : session.customer.id;
+          const customer = await stripe.customers.retrieve(customerId);
+          if (!customer.deleted) {
+            clinicId = (customer as Stripe.Customer).metadata?.clinic_id;
+          }
+        }
 
         if (!clinicId) {
-          console.error("Missing clinic_id in session metadata");
+          console.error("Missing clinic_id in session and customer metadata");
           break;
         }
 
