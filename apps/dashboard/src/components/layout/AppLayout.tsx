@@ -5,6 +5,7 @@ import { useClinicStore } from '@/store/clinic-store';
 import { ClinicSelector } from '@/components/clinic/ClinicSelector';
 import { NotificationBell } from '@/features/notifications/components/NotificationBell';
 import { Button } from '@/components/ui/button';
+import { Breadcrumbs } from './Breadcrumbs';
 import { LayoutDashboard, Users, Calendar, FileText, DollarSign, Stethoscope, LogOut, Database, UserCog, ChartBar as BarChart2 } from 'lucide-react';
 
 interface AppLayoutProps {
@@ -93,6 +94,8 @@ export function AppLayout({ children }: AppLayoutProps) {
           </div>
         </div>
       </header>
+
+      <Breadcrumbs />
 
       <main>{children}</main>
     </div>
