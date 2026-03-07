@@ -16,9 +16,14 @@ import { GlobalSearchDialog } from '@/features/search/components/GlobalSearchDia
 import { SystemBackupsPage } from '@/features/backups/pages/SystemBackupsPage';
 import { InvoicesPage } from '@/features/invoices/pages/InvoicesPage';
 import { ProvidersPage } from '@/features/providers/pages/ProvidersPage';
+import { PatientProfilePage } from '@/features/patients/pages/PatientProfilePage';
+import { SettingsPage } from '@/features/settings/pages/SettingsPage';
+import { RemindersPage } from '@/features/reminders/pages/RemindersPage';
 import { LandingPage } from '@/features/marketing/pages/LandingPage';
 import { PricingPage } from '@/features/marketing/pages/PricingPage';
 import { SignupPage } from '@/features/marketing/pages/SignupPage';
+import { StaffPage } from '@/features/staff/pages/StaffPage';
+import { ReportsPage } from '@/features/reports/pages/ReportsPage';
 import { useAuthStore } from '@/store/auth-store';
 
 function App() {
@@ -142,6 +147,53 @@ function App() {
           </AuthGuard>
         }
       />
+
+      <Route
+        path="/patients/:patientId"
+        element={
+          <AuthGuard>
+            <PatientProfilePage />
+          </AuthGuard>
+        }
+      />
+
+      <Route
+        path="/settings"
+        element={
+          <AuthGuard>
+            <SettingsPage />
+          </AuthGuard>
+        }
+      />
+
+      <Route
+        path="/reminders"
+        element={
+          <AuthGuard>
+            <RemindersPage />
+          </AuthGuard>
+        }
+      />
+
+      <Route
+        path="/staff"
+        element={
+          <AuthGuard>
+            <StaffPage />
+          </AuthGuard>
+        }
+      />
+
+      <Route
+        path="/reports"
+        element={
+          <AuthGuard>
+            <ReportsPage />
+          </AuthGuard>
+        }
+      />
+
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </>
   );

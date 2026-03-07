@@ -8,6 +8,29 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey, stripe-signature",
 };
 
+async function syncClinic(
+  supabaseAdmin: ReturnType<typeof createClient>,
+  clinicId: string,
+  fields: { plan?: string; subscription_status?: string }
+) {
+  await supabaseAdmin
+    .from("clinics")
+    .update({ ...fields, updated_at: new Date().toISOString() })
+    .eq("id", clinicId);
+}
+
+async function getClinicIdBySubscription(
+  supabaseAdmin: ReturnType<typeof createClient>,
+  stripeSubscriptionId: string
+): Promise<string | null> {
+  const { data } = await supabaseAdmin
+    .from("subscriptions")
+    .select("clinic_id")
+    .eq("stripe_subscription_id", stripeSubscriptionId)
+    .maybeSingle();
+  return data?.clinic_id ?? null;
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, {
@@ -48,10 +71,21 @@ Deno.serve(async (req: Request) => {
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
-        const clinicId = session.metadata?.clinic_id;
+        let clinicId = session.metadata?.clinic_id;
+
+        if (!clinicId && session.customer) {
+          const customerId =
+            typeof session.customer === "string"
+              ? session.customer
+              : session.customer.id;
+          const customer = await stripe.customers.retrieve(customerId);
+          if (!customer.deleted) {
+            clinicId = (customer as Stripe.Customer).metadata?.clinic_id;
+          }
+        }
 
         if (!clinicId) {
-          console.error("Missing clinic_id in session metadata");
+          console.error("Missing clinic_id in session and customer metadata");
           break;
         }
 
@@ -61,37 +95,21 @@ Deno.serve(async (req: Request) => {
               ? session.subscription
               : session.subscription.id;
 
-          const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-
           await supabaseAdmin
             .from("subscriptions")
             .update({
-              stripe_subscription_id: subscription.id,
-              status: subscription.status,
-              current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+              status: "active",
+              stripe_subscription_id: subscriptionId,
               updated_at: new Date().toISOString(),
             })
             .eq("clinic_id", clinicId);
+
+          await syncClinic(supabaseAdmin, clinicId, { subscription_status: "active" });
         }
         break;
       }
 
-      case "customer.subscription.updated":
-      case "customer.subscription.deleted": {
-        const subscription = event.data.object as Stripe.Subscription;
-
-        await supabaseAdmin
-          .from("subscriptions")
-          .update({
-            status: subscription.status,
-            current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-            updated_at: new Date().toISOString(),
-          })
-          .eq("stripe_subscription_id", subscription.id);
-        break;
-      }
-
-      case "invoice.payment_succeeded": {
+      case "invoice.paid": {
         const invoice = event.data.object as Stripe.Invoice;
 
         if (invoice.subscription) {
@@ -100,16 +118,18 @@ Deno.serve(async (req: Request) => {
               ? invoice.subscription
               : invoice.subscription.id;
 
-          const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-
           await supabaseAdmin
             .from("subscriptions")
             .update({
-              status: subscription.status,
-              current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+              status: "active",
               updated_at: new Date().toISOString(),
             })
-            .eq("stripe_subscription_id", subscription.id);
+            .eq("stripe_subscription_id", subscriptionId);
+
+          const clinicId = await getClinicIdBySubscription(supabaseAdmin, subscriptionId);
+          if (clinicId) {
+            await syncClinic(supabaseAdmin, clinicId, { subscription_status: "active" });
+          }
         }
         break;
       }
@@ -130,6 +150,63 @@ Deno.serve(async (req: Request) => {
               updated_at: new Date().toISOString(),
             })
             .eq("stripe_subscription_id", subscriptionId);
+
+          const clinicId = await getClinicIdBySubscription(supabaseAdmin, subscriptionId);
+          if (clinicId) {
+            await syncClinic(supabaseAdmin, clinicId, { subscription_status: "past_due" });
+          }
+        }
+        break;
+      }
+
+      case "customer.subscription.deleted": {
+        const subscription = event.data.object as Stripe.Subscription;
+
+        const clinicId = await getClinicIdBySubscription(supabaseAdmin, subscription.id);
+
+        await supabaseAdmin
+          .from("subscriptions")
+          .update({
+            status: "canceled",
+            updated_at: new Date().toISOString(),
+          })
+          .eq("stripe_subscription_id", subscription.id);
+
+        if (clinicId) {
+          await syncClinic(supabaseAdmin, clinicId, { subscription_status: "canceled" });
+        }
+        break;
+      }
+
+      case "customer.subscription.updated": {
+        const subscription = event.data.object as Stripe.Subscription;
+        const priceId = subscription.items.data[0]?.price?.id;
+
+        const priceToplan: Record<string, string> = {
+          [Deno.env.get("STRIPE_PRICE_STARTER") ?? ""]: "starter",
+          [Deno.env.get("STRIPE_PRICE_PROFESSIONAL") ?? ""]: "professional",
+          [Deno.env.get("STRIPE_PRICE_ENTERPRISE") ?? ""]: "enterprise",
+        };
+
+        const plan = priceId ? priceToplan[priceId] : undefined;
+
+        const clinicId = await getClinicIdBySubscription(supabaseAdmin, subscription.id);
+
+        await supabaseAdmin
+          .from("subscriptions")
+          .update({
+            status: subscription.status,
+            ...(plan ? { plan } : {}),
+            current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+            updated_at: new Date().toISOString(),
+          })
+          .eq("stripe_subscription_id", subscription.id);
+
+        if (clinicId) {
+          await syncClinic(supabaseAdmin, clinicId, {
+            subscription_status: subscription.status,
+            ...(plan ? { plan } : {}),
+          });
         }
         break;
       }

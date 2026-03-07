@@ -5,16 +5,7 @@ import { useClinicStore } from '@/store/clinic-store';
 import { ClinicSelector } from '@/components/clinic/ClinicSelector';
 import { NotificationBell } from '@/features/notifications/components/NotificationBell';
 import { Button } from '@/components/ui/button';
-import {
-  LayoutDashboard,
-  Users,
-  Calendar,
-  FileText,
-  DollarSign,
-  Stethoscope,
-  LogOut,
-  Database,
-} from 'lucide-react';
+import { LayoutDashboard, Users, Calendar, FileText, DollarSign, Stethoscope, LogOut, Database, UserCog, ChartBar as BarChart2 } from 'lucide-react';
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -32,6 +23,8 @@ export function AppLayout({ children }: AppLayoutProps) {
     { name: 'Visits', href: '/visits', icon: FileText },
     { name: 'Invoices', href: '/invoices', icon: DollarSign },
     { name: 'Procedures', href: '/procedures', icon: Stethoscope },
+    { name: 'Staff', href: '/staff', icon: UserCog },
+    { name: 'Reports', href: '/reports', icon: BarChart2 },
   ];
 
   const isActive = (path: string) => {

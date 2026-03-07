@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { usePermissions } from '@/hooks/usePermissions';
 import { getPatients } from '../api/patientsApi';
 import { QueryErrorAlert } from '@/components/system/ErrorAlert';
+import { ExportCSVButton } from '@/components/system/ExportCSVButton';
 
 export function PatientsPage() {
   const clinicId = useClinicStore((state) => state.clinicId);
@@ -30,6 +31,16 @@ export function PatientsPage() {
 
   const patients = data?.data || [];
   const totalCount = data?.totalCount || 0;
+
+  const exportData = patients.map((p) => ({
+    first_name: p.first_name,
+    last_name: p.last_name,
+    email: p.email,
+    phone: p.phone,
+    date_of_birth: p.date_of_birth,
+    gender: p.gender,
+    created_at: p.created_at,
+  }));
 
   if (!clinicId) {
     return (
@@ -56,12 +67,15 @@ export function PatientsPage() {
             Manage your clinic's patient records
           </p>
         </div>
-        <Button
-          onClick={() => setIsCreateDialogOpen(true)}
-          disabled={permissions.role === 'staff'}
-        >
-          Add Patient
-        </Button>
+        <div className="flex items-center gap-2">
+          <ExportCSVButton label="Export Patients" filename="patients" data={exportData} />
+          <Button
+            onClick={() => setIsCreateDialogOpen(true)}
+            disabled={permissions.role === 'staff'}
+          >
+            Add Patient
+          </Button>
+        </div>
       </div>
 
       <PatientsTable patients={patients} isLoading={isLoading} clinicId={clinicId} />

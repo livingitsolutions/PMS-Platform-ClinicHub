@@ -14,6 +14,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { QueryErrorAlert } from '@/components/system/ErrorAlert';
+import { ExportCSVButton } from '@/components/system/ExportCSVButton';
 
 interface VisitListItem {
   id: string;
@@ -86,6 +87,15 @@ export function VisitsListPage() {
 
   const visits = data?.data || [];
   const totalCount = data?.totalCount || 0;
+
+  const exportData = visits.map((v) => ({
+    visit_id: v.id,
+    patient_name: v.patients ? `${v.patients.first_name} ${v.patients.last_name}` : '',
+    provider_name: v.providers?.name ?? '',
+    visit_date: v.visit_date,
+    status: v.status,
+    diagnosis: '',
+  }));
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -170,10 +180,15 @@ export function VisitsListPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>All Visits</CardTitle>
-          <CardDescription>
-            Click on any visit to view details
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>All Visits</CardTitle>
+              <CardDescription>
+                Click on any visit to view details
+              </CardDescription>
+            </div>
+            <ExportCSVButton label="Export Visits" filename="visits" data={exportData} />
+          </div>
         </CardHeader>
         <CardContent>
           {isLoading ? (

@@ -20,6 +20,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { QueryErrorAlert } from '@/components/system/ErrorAlert';
+import { ExportCSVButton } from '@/components/system/ExportCSVButton';
 
 interface InvoiceWithDetails {
   id: string;
@@ -125,6 +126,15 @@ export function InvoicesPage() {
   const invoices = data?.data || [];
   const totalCount = data?.totalCount || 0;
 
+  const exportData = invoices.map((inv) => ({
+    invoice_id: inv.id,
+    visit_id: inv.visit_id,
+    status: inv.status,
+    total_amount: inv.total_amount,
+    amount_paid: inv.amount_paid,
+    created_at: inv.created_at,
+  }));
+
   if (!clinicId) {
     return (
       <div className="p-8">
@@ -152,10 +162,15 @@ export function InvoicesPage() {
       {!error && (
       <Card>
         <CardHeader>
-          <CardTitle>Invoices</CardTitle>
-          <CardDescription>
-            View and manage invoices for your clinic
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Invoices</CardTitle>
+              <CardDescription>
+                View and manage invoices for your clinic
+              </CardDescription>
+            </div>
+            <ExportCSVButton label="Export Invoices" filename="invoices" data={exportData} />
+          </div>
         </CardHeader>
         <CardContent>
           {isLoading ? (
