@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useClinicStore } from '@/store/clinic-store';
-import { getClinicSubscription, isSubscriptionActive } from '../api/subscriptionApi';
+import { getClinicSubscription } from '../api/subscriptionApi';
 
 export function useSubscription() {
   const clinicId = useClinicStore((s) => s.clinicId);
@@ -14,13 +14,16 @@ export function useSubscription() {
     },
   });
 
-  const isActive = isSubscriptionActive(subscription ?? null);
+  const status = subscription?.status ?? null;
+  const isActive = status === 'active' || status === 'trialing';
 
   return {
-    subscription,
+    plan: subscription?.plan ?? null,
+    status,
+    current_period_end: subscription?.current_period_end ?? null,
+    isActive,
     isLoading,
     error,
-    isActive,
     refetch,
   };
 }

@@ -3,9 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useSubscription } from '../hooks/useSubscription';
 
 export function SubscriptionStatus() {
-  const { subscription, isActive } = useSubscription();
+  const { plan, status, current_period_end, isActive } = useSubscription();
 
-  if (!subscription) {
+  if (!status) {
     return null;
   }
 
@@ -47,7 +47,7 @@ export function SubscriptionStatus() {
     },
   };
 
-  const config = statusConfig[subscription.status as keyof typeof statusConfig] || statusConfig.incomplete;
+  const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.incomplete;
   const Icon = config.icon;
 
   const formatDate = (dateString: string | null) => {
@@ -76,20 +76,20 @@ export function SubscriptionStatus() {
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
             <span className="text-gray-600">Plan:</span>
-            <span className="font-medium capitalize">{subscription.plan}</span>
+            <span className="font-medium capitalize">{plan}</span>
           </div>
 
-          {subscription.current_period_end && (
+          {current_period_end && (
             <div className="flex justify-between">
               <span className="text-gray-600">
                 {isActive ? 'Renews on:' : 'Ended on:'}
               </span>
-              <span className="font-medium">{formatDate(subscription.current_period_end)}</span>
+              <span className="font-medium">{formatDate(current_period_end)}</span>
             </div>
           )}
         </div>
 
-        {!isActive && subscription.status === 'past_due' && (
+        {!isActive && status === 'past_due' && (
           <div className="mt-4 p-3 bg-orange-50 border border-orange-200 rounded-md">
             <p className="text-sm text-orange-800">
               Your payment is past due. Please update your payment method to continue using the service.
@@ -97,7 +97,7 @@ export function SubscriptionStatus() {
           </div>
         )}
 
-        {!isActive && subscription.status === 'incomplete' && (
+        {!isActive && status === 'incomplete' && (
           <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
             <p className="text-sm text-yellow-800">
               Your subscription setup is incomplete. Please complete the checkout process.
