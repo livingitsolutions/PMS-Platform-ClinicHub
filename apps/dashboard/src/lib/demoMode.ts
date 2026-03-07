@@ -1,7 +1,12 @@
 import { toast } from 'sonner';
+import { useAuthStore } from '@/store/auth-store';
+
+const DEMO_EMAIL = 'demo@clinichub.app';
 
 export function isDemoMode(): boolean {
-  return import.meta.env.VITE_DEMO_MODE === 'true';
+  if (import.meta.env.VITE_DEMO_MODE === 'true') return true;
+  const user = useAuthStore.getState().user;
+  return user?.email === DEMO_EMAIL;
 }
 
 export class DemoModeError extends Error {
