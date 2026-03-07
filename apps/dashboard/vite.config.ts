@@ -9,5 +9,9 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
+    modules: [
+      path.resolve(__dirname, '../../node_modules'),
+      'node_modules',
+    ],
   },
 })
