@@ -5,6 +5,7 @@ import { RevenueReport } from '../components/RevenueReport';
 import { ProviderPerformanceReport } from '../components/ProviderPerformanceReport';
 import { ProcedureReport } from '../components/ProcedureReport';
 import { QueryErrorAlert } from '@/components/system/ErrorAlert';
+import { ExportCSVButton } from '@/components/system/ExportCSVButton';
 
 export function ReportsPage() {
   const clinicId = useClinicStore((s) => s.clinicId);
@@ -23,11 +24,21 @@ export function ReportsPage() {
   return (
     <AppLayout>
       <div className="mx-auto max-w-7xl px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Reports</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Analytics for the last 30 days
-          </p>
+        <div className="mb-8 flex items-start justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Reports</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Analytics for the last 30 days
+            </p>
+          </div>
+          <ExportCSVButton
+            label="Export Revenue"
+            filename="revenue-report"
+            data={(data?.monthlyRevenue || []).map((r) => ({
+              date: r.date,
+              revenue: r.revenue,
+            }))}
+          />
         </div>
 
         {error && (
