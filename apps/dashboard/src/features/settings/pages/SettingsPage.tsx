@@ -11,6 +11,8 @@ import {
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { usePermissions } from '@/hooks/usePermissions';
+import { useSubscription } from '@/features/billing/hooks/useSubscription';
+import { BillingPortalButton } from '@/features/billing/components/BillingPortalButton';
 
 interface Clinic {
   id: string;
@@ -33,9 +35,29 @@ async function getClinic(clinicId: string): Promise<Clinic> {
   return data;
 }
 
+function formatPlanLabel(plan: string | null): string {
+  if (!plan) return 'None';
+  return plan.charAt(0).toUpperCase() + plan.slice(1);
+}
+
+function formatStatusLabel(status: string | null): string {
+  if (!status) return 'Inactive';
+  return status.charAt(0).toUpperCase() + status.slice(1);
+}
+
+function formatDate(dateString: string | null): string {
+  if (!dateString) return 'N/A';
+  return new Date(dateString).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+}
+
 export function SettingsPage() {
   const clinicId = useClinicStore((state) => state.clinicId);
   const { canManageSettings } = usePermissions();
+  const { plan, status, current_period_end, isLoading: subscriptionLoading } = useSubscription();
 
   const { data: clinic, isLoading } = useQuery({
     queryKey: ['clinic', clinicId],
@@ -132,6 +154,40 @@ export function SettingsPage() {
               />
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle>Billing</CardTitle>
+          <CardDescription>
+            Manage your subscription and billing details
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {subscriptionLoading ? (
+            <p className="text-muted-foreground text-sm">Loading subscription...</p>
+          ) : (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Plan</p>
+                  <p className="text-sm font-medium">{formatPlanLabel(plan)}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Status</p>
+                  <p className="text-sm font-medium">{formatStatusLabel(status)}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Next Billing Date</p>
+                  <p className="text-sm font-medium">{formatDate(current_period_end)}</p>
+                </div>
+              </div>
+              <div className="pt-2">
+                <BillingPortalButton />
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
