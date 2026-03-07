@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, Stethoscope, FileText, CreditCard, Download, CheckCircle, PlayCircle, XCircle, ChevronDown } from 'lucide-react';
+import { ArrowLeft, User, Stethoscope, FileText, CreditCard, Download, CircleCheck as CheckCircle, CirclePlay as PlayCircle, Circle as XCircle, ChevronDown } from 'lucide-react';
 import {
   Card,
   CardContent,
