@@ -30,6 +30,22 @@ export function Footer() {
               </li>
               <li>
                 <button
+                  onClick={() => navigate('/demo')}
+                  className="hover:text-white transition-colors"
+                >
+                  Demo
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => navigate('/docs')}
+                  className="hover:text-white transition-colors"
+                >
+                  Docs
+                </button>
+              </li>
+              <li>
+                <button
                   onClick={() => navigate('/pricing')}
                   className="hover:text-white transition-colors"
                 >

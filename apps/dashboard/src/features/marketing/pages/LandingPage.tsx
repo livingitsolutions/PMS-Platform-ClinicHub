@@ -2,6 +2,7 @@ import { HeroSection } from '../components/HeroSection';
 import { FeaturesSection } from '../components/FeaturesSection';
 import { PricingSection } from '../components/PricingSection';
 import { Footer } from '../components/Footer';
+import { MarketingNav } from '../components/MarketingNav';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 
@@ -10,38 +11,7 @@ export function LandingPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-blue-600">ClinicPro</h1>
-            </div>
-            <div className="hidden md:flex items-center space-x-8">
-              <a href="#features" className="text-gray-700 hover:text-blue-600 transition-colors">
-                Features
-              </a>
-              <button
-                onClick={() => navigate('/pricing')}
-                className="text-gray-700 hover:text-blue-600 transition-colors"
-              >
-                Pricing
-              </button>
-              <Button
-                variant="outline"
-                onClick={() => navigate('/login')}
-              >
-                Login
-              </Button>
-              <Button
-                onClick={() => navigate('/signup')}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                Start Free Trial
-              </Button>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <MarketingNav activePage="home" />
 
       <HeroSection />
 
