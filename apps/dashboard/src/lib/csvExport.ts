@@ -16,7 +16,7 @@ export function exportToCSV(filename: string, rows: Record<string, unknown>[]): 
     ...rows.map((row) => headers.map((h) => escapeCell(row[h])).join(',')),
   ];
 
-  const csv = csvLines.join('\n');
+  const csv = '\uFEFF' + csvLines.join('\n');
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
 
