@@ -25,27 +25,14 @@ export async function createClinic(payload: CreateClinicPayload): Promise<Clinic
   }
 
   const { data: clinic, error: clinicError } = await supabase
-    .from('clinics')
-    .insert({
-      name: payload.clinic_name,
-      address: payload.address,
-      phone: payload.phone,
-      email: payload.email,
-    })
-    .select()
-    .single();
-
-  if (clinicError) throw clinicError;
-
-  const { error: clinicUserError } = await supabase
-    .from('user_clinics')
-    .insert({
-      clinic_id: clinic.id,
-      user_id: user.id,
-      role: 'owner',
+    .rpc('create_clinic_for_authenticated_user', {
+      p_name: payload.clinic_name,
+      p_address: payload.address,
+      p_phone: payload.phone,
+      p_email: payload.email,
     });
 
-  if (clinicUserError) throw clinicUserError;
+  if (clinicError) throw clinicError;
 
   await logAuditEvent({
     clinicId: clinic.id,
