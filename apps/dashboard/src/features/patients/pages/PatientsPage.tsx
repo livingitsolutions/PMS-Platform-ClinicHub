@@ -1,47 +1,35 @@
-import { useQuery } from '@tanstack/react-query';
-import { useClinicStore } from '@/store/clinic-store';
-import { PatientsTable } from '@/features/patients/components/PatientsTable';
-import { CreatePatientDialog } from '@/features/patients/components/CreatePatientDialog';
-import { Button } from '@/components/ui/button';
-import { Pagination } from '@/components/ui/pagination';
 import { useState } from 'react';
-import { usePermissions } from '@/hooks/usePermissions';
-import { getPatients } from '../api/patientsApi';
-import { QueryErrorAlert } from '@/components/system/ErrorAlert';
-import { ExportCSVButton } from '@/components/system/ExportCSVButton';
-import { DashboardLayout, PageHeader } from '@/components/layout/DashboardLayout';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useClinicStore } from '@/store/clinic-store';
+import { getPatients, type Patient } from '../api/patientsApi';
+import { CreatePatientDialog } from '@/features/patients/components/CreatePatientDialog';
+import { PatientListPanel } from '@/features/patients/components/PatientListPanel';
+import { PatientDetailPanel } from '@/features/patients/components/PatientDetailPanel';
+import { PatientInfoPanel } from '@/features/patients/components/PatientInfoPanel';
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import { Users } from 'lucide-react';
 
 export function PatientsPage() {
   const clinicId = useClinicStore((state) => state.clinicId);
+  const { clinics } = useClinicStore();
+  const currentClinic = clinics.find((c) => c.id === clinicId);
+  const currencyCode = currentClinic?.currency_code ?? 'PHP';
+
+  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const permissions = usePermissions();
-  const pageSize = 20;
+  const [searchQuery, setSearchQuery] = useState('');
+  const queryClient = useQueryClient();
 
-  const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['patients', clinicId, currentPage],
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ['patients', clinicId, 1],
     queryFn: async () => {
-      if (!clinicId) {
-        throw new Error('No clinic selected');
-      }
-
-      return getPatients(clinicId, currentPage, pageSize);
+      if (!clinicId) throw new Error('No clinic selected');
+      return getPatients(clinicId, 1, 100);
     },
     enabled: !!clinicId,
   });
 
   const patients = data?.data || [];
-  const totalCount = data?.totalCount || 0;
-
-  const exportData = patients.map((p) => ({
-    first_name: p.first_name,
-    last_name: p.last_name,
-    email: p.email,
-    phone: p.phone,
-    date_of_birth: p.date_of_birth,
-    gender: p.gender,
-    created_at: p.created_at,
-  }));
 
   if (!clinicId) {
     return (
@@ -55,52 +43,59 @@ export function PatientsPage() {
 
   return (
     <DashboardLayout>
-      {error && (
-        <div className="mb-6">
-          <QueryErrorAlert error={error} onRetry={() => refetch()} />
+      <div className="flex h-[calc(100vh-56px-48px)] -m-6 overflow-hidden rounded-none">
+        <div className="w-[280px] shrink-0 flex flex-col border-r border-gray-100">
+          <PatientListPanel
+            patients={patients}
+            isLoading={isLoading}
+            selectedPatientId={selectedPatient?.id}
+            onSelectPatient={setSelectedPatient}
+            onAddPatient={() => setIsCreateDialogOpen(true)}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+          />
         </div>
-      )}
 
-      {!error && (
-        <>
-          <PageHeader
-            title="Patients"
-            subtitle="Manage your clinic's patient records"
-            actions={
-              <>
-                <ExportCSVButton label="Export Patients" filename="patients" data={exportData} />
-                <Button
-                  onClick={() => setIsCreateDialogOpen(true)}
-                  disabled={permissions.role === 'staff'}
-                >
-                  Add Patient
-                </Button>
-              </>
-            }
-          />
-
-          <PatientsTable patients={patients} isLoading={isLoading} clinicId={clinicId} />
-
-          {!isLoading && patients.length > 0 && (
-            <Pagination
-              currentPage={currentPage}
-              totalItems={totalCount}
-              pageSize={pageSize}
-              onPageChange={setCurrentPage}
+        <div className="flex-1 min-w-0">
+          {selectedPatient ? (
+            <PatientDetailPanel
+              patient={selectedPatient}
+              clinicId={clinicId}
+              currencyCode={currencyCode}
             />
+          ) : (
+            <div className="flex flex-col items-center justify-center h-full bg-gray-50">
+              <div className="size-16 rounded-2xl bg-white border border-gray-100 shadow-sm flex items-center justify-center mb-4">
+                <Users className="size-8 text-gray-300" />
+              </div>
+              <p className="text-sm font-medium text-gray-500">Select a patient to view details</p>
+              <p className="text-xs text-gray-400 mt-1">Click on any patient from the list on the left</p>
+            </div>
           )}
+        </div>
 
-          <CreatePatientDialog
-            open={isCreateDialogOpen}
-            onOpenChange={setIsCreateDialogOpen}
-            onSuccess={() => {
-              setCurrentPage(1);
-              refetch();
-              setIsCreateDialogOpen(false);
-            }}
-          />
-        </>
-      )}
+        {selectedPatient && (
+          <div className="w-[280px] shrink-0 border-l border-gray-100">
+            <PatientInfoPanel
+              patient={selectedPatient}
+              clinicId={clinicId}
+              onPatientUpdated={() => {
+                refetch();
+                queryClient.invalidateQueries({ queryKey: ['patients', clinicId] });
+              }}
+            />
+          </div>
+        )}
+      </div>
+
+      <CreatePatientDialog
+        open={isCreateDialogOpen}
+        onOpenChange={setIsCreateDialogOpen}
+        onSuccess={() => {
+          refetch();
+          setIsCreateDialogOpen(false);
+        }}
+      />
     </DashboardLayout>
   );
 }
