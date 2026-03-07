@@ -3,20 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Footer } from '../components/Footer';
 import { MarketingNav } from '../components/MarketingNav';
-import {
-  Calendar,
-  Users,
-  FileText,
-  CreditCard,
-  BarChart3,
-  Shield,
-  Database,
-  ChevronRight,
-  Search,
-  BookOpen,
-  Zap,
-  LifeBuoy,
-} from 'lucide-react';
+import { Calendar, Users, FileText, CreditCard, ChartBar as BarChart3, Shield, Database, ChevronRight, Search, BookOpen, Zap, LifeBuoy } from 'lucide-react';
 
 type DocSection = {
   id: string;
