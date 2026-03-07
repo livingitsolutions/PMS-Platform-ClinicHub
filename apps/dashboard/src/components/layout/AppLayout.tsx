@@ -5,18 +5,7 @@ import { useClinicStore } from '@/store/clinic-store';
 import { ClinicSelector } from '@/components/clinic/ClinicSelector';
 import { NotificationBell } from '@/features/notifications/components/NotificationBell';
 import { Button } from '@/components/ui/button';
-import {
-  LayoutDashboard,
-  Users,
-  Calendar,
-  FileText,
-  DollarSign,
-  Stethoscope,
-  LogOut,
-  Database,
-  UserCog,
-  BarChart2,
-} from 'lucide-react';
+import { LayoutDashboard, Users, Calendar, FileText, DollarSign, Stethoscope, LogOut, Database, UserCog, ChartBar as BarChart2 } from 'lucide-react';
 
 interface AppLayoutProps {
   children: ReactNode;
