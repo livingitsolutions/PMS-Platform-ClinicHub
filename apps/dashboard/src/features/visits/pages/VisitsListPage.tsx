@@ -82,8 +82,6 @@ export function VisitsListPage() {
       };
     },
     enabled: !!clinicId,
-    staleTime: 1000 * 60,
-    refetchOnWindowFocus: false
   });
 
   const visits = data?.data || [];
