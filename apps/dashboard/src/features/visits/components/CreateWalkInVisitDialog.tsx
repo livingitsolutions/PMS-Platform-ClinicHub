@@ -25,11 +25,11 @@ import { useClinicStore } from '@/store/clinic-store';
 import { supabase } from '@/lib/supabase';
 import { createWalkInVisit } from '../api/walkInVisitApi';
 
-interface WalkInVisitDialogProps {
+interface CreateWalkInVisitDialogProps {
   onCreated?: () => void;
 }
 
-export function WalkInVisitDialog({ onCreated }: WalkInVisitDialogProps) {
+export function CreateWalkInVisitDialog({ onCreated }: CreateWalkInVisitDialogProps) {
   const [open, setOpen] = useState(false);
   const clinicId = useClinicStore((s) => s.clinicId);
   const navigate = useNavigate();

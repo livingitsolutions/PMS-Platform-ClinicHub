@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/table';
 import { QueryErrorAlert } from '@/components/system/ErrorAlert';
 import { ExportCSVButton } from '@/components/system/ExportCSVButton';
-import { WalkInVisitDialog } from '../components/WalkInVisitDialog';
+import { CreateWalkInVisitDialog } from '../components/CreateWalkInVisitDialog';
 
 interface VisitListItem {
   id: string;
@@ -189,7 +189,7 @@ export function VisitsListPage() {
               </CardDescription>
             </div>
             <div className="flex items-center gap-2">
-              <WalkInVisitDialog onCreated={() => refetch()} />
+              <CreateWalkInVisitDialog onCreated={() => refetch()} />
               <ExportCSVButton label="Export Visits" filename="visits" data={exportData} />
             </div>
           </div>
