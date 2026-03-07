@@ -2,6 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { Patient } from '../api/patientsApi';
+import { PatientTimeline } from '../components/PatientTimeline';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Table,
@@ -200,6 +201,8 @@ export function PatientProfilePage() {
           )}
         </CardContent>
       </Card>
+
+      <PatientTimeline patientId={patientId} />
     </div>
   );
 }
