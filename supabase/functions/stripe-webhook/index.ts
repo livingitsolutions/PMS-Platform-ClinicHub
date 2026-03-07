@@ -61,55 +61,14 @@ Deno.serve(async (req: Request) => {
               ? session.subscription
               : session.subscription.id;
 
-          const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-
           await supabaseAdmin
             .from("subscriptions")
             .update({
-              stripe_subscription_id: subscription.id,
-              status: subscription.status,
-              current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+              status: "active",
+              stripe_subscription_id: subscriptionId,
               updated_at: new Date().toISOString(),
             })
             .eq("clinic_id", clinicId);
-        }
-        break;
-      }
-
-      case "customer.subscription.updated":
-      case "customer.subscription.deleted": {
-        const subscription = event.data.object as Stripe.Subscription;
-
-        await supabaseAdmin
-          .from("subscriptions")
-          .update({
-            status: subscription.status,
-            current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-            updated_at: new Date().toISOString(),
-          })
-          .eq("stripe_subscription_id", subscription.id);
-        break;
-      }
-
-      case "invoice.payment_succeeded": {
-        const invoice = event.data.object as Stripe.Invoice;
-
-        if (invoice.subscription) {
-          const subscriptionId =
-            typeof invoice.subscription === "string"
-              ? invoice.subscription
-              : invoice.subscription.id;
-
-          const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-
-          await supabaseAdmin
-            .from("subscriptions")
-            .update({
-              status: subscription.status,
-              current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-              updated_at: new Date().toISOString(),
-            })
-            .eq("stripe_subscription_id", subscription.id);
         }
         break;
       }
@@ -131,6 +90,42 @@ Deno.serve(async (req: Request) => {
             })
             .eq("stripe_subscription_id", subscriptionId);
         }
+        break;
+      }
+
+      case "customer.subscription.deleted": {
+        const subscription = event.data.object as Stripe.Subscription;
+
+        await supabaseAdmin
+          .from("subscriptions")
+          .update({
+            status: "canceled",
+            updated_at: new Date().toISOString(),
+          })
+          .eq("stripe_subscription_id", subscription.id);
+        break;
+      }
+
+      case "customer.subscription.updated": {
+        const subscription = event.data.object as Stripe.Subscription;
+        const priceId = subscription.items.data[0]?.price?.id;
+
+        const priceToplan: Record<string, string> = {
+          [Deno.env.get("STRIPE_PRICE_STARTER") ?? ""]: "starter",
+          [Deno.env.get("STRIPE_PRICE_PROFESSIONAL") ?? ""]: "professional",
+          [Deno.env.get("STRIPE_PRICE_ENTERPRISE") ?? ""]: "enterprise",
+        };
+
+        const plan = priceId ? priceToplan[priceId] : undefined;
+
+        await supabaseAdmin
+          .from("subscriptions")
+          .update({
+            status: subscription.status,
+            ...(plan ? { plan } : {}),
+            updated_at: new Date().toISOString(),
+          })
+          .eq("stripe_subscription_id", subscription.id);
         break;
       }
 
