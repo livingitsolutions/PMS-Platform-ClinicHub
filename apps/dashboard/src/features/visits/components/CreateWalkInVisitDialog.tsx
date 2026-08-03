@@ -138,7 +138,7 @@ export function CreateWalkInVisitDialog({ onCreated }: CreateWalkInVisitDialogPr
                 <SelectValue placeholder="Select patient" />
               </SelectTrigger>
               <SelectContent>
-                {patients?.map((p) => (
+                {patients?.map((p: { id: string; first_name: string; last_name: string }) => (
                   <SelectItem key={p.id} value={p.id}>
                     {p.last_name}, {p.first_name}
                   </SelectItem>
@@ -154,7 +154,7 @@ export function CreateWalkInVisitDialog({ onCreated }: CreateWalkInVisitDialogPr
                 <SelectValue placeholder="Select provider" />
               </SelectTrigger>
               <SelectContent>
-                {providers?.map((p) => (
+                {providers?.map((p: { id: string; name: string }) => (
                   <SelectItem key={p.id} value={p.id}>
                     {p.name}
                   </SelectItem>

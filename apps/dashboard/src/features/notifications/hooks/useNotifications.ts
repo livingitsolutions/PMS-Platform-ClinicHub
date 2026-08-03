@@ -6,8 +6,6 @@ import {
   markAsRead,
   markAllAsRead,
 } from '../api/notificationsApi';
-import { supabase } from '@/lib/supabase';
-import { useEffect } from 'react';
 
 export function useNotifications() {
   const user = useAuthStore((s) => s.user);
@@ -20,6 +18,7 @@ export function useNotifications() {
       if (!user?.id) return [];
       return getUserNotifications(user.id);
     },
+    refetchInterval: 15_000,
   });
 
   const { data: unreadCount = 0 } = useQuery({
@@ -29,6 +28,7 @@ export function useNotifications() {
       if (!user?.id) return 0;
       return getUnreadCount(user.id);
     },
+    refetchInterval: 15_000,
   });
 
   const markReadMutation = useMutation({
@@ -49,31 +49,6 @@ export function useNotifications() {
       queryClient.invalidateQueries({ queryKey: ['notifications-unread-count', user?.id] });
     },
   });
-
-  useEffect(() => {
-    if (!user?.id) return;
-
-    const channel = supabase
-      .channel('notifications-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'notifications',
-          filter: `user_id=eq.${user.id}`,
-        },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ['notifications', user?.id] });
-          queryClient.invalidateQueries({ queryKey: ['notifications-unread-count', user?.id] });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user?.id, queryClient]);
 
   return {
     notifications,

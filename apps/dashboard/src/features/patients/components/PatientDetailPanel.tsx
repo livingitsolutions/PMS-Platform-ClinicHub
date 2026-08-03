@@ -43,7 +43,7 @@ async function getPatientVisitsWithInvoices(
   if (error) throw error;
   if (!visits || visits.length === 0) return [];
 
-  const visitIds = visits.map((v) => v.id);
+  const visitIds = visits.map((v: Visit) => v.id);
   const { data: invoices } = await supabase
     .from('invoices')
     .select('id, visit_id, total_amount, amount_paid, status')
@@ -51,7 +51,7 @@ async function getPatientVisitsWithInvoices(
 
   const invoiceMap = new Map((invoices || []).map((inv: Invoice & { visit_id: string }) => [inv.visit_id, inv]));
 
-  return visits.map((v) => ({
+  return visits.map((v: Visit) => ({
     ...(v as unknown as Visit),
     invoice: (invoiceMap.get(v.id) as Invoice) || null,
   }));

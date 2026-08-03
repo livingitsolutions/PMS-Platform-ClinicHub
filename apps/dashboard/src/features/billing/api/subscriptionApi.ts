@@ -42,8 +42,6 @@ export interface CheckoutSessionResponse {
 export async function createCheckoutSession(
   payload: CreateCheckoutSessionPayload
 ): Promise<CheckoutSessionResponse> {
-  const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout-session`;
-
   const {
     data: { session },
   } = await supabase.auth.getSession();
@@ -52,14 +50,10 @@ export async function createCheckoutSession(
     throw new Error('Not authenticated');
   }
 
-  const headers = {
-    Authorization: `Bearer ${session.access_token}`,
-    'Content-Type': 'application/json',
-  };
-
-  const response = await fetch(apiUrl, {
+  const response = await fetch('/api/create-checkout-session', {
     method: 'POST',
-    headers,
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
 

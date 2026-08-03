@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useClinicStore } from '@/store/clinic-store';
-import { supabase } from '@/lib/supabase';
 import { assertNotDemoMode } from '@/lib/demoMode';
 import {
   getPendingReminders,
@@ -92,20 +91,12 @@ export function useProcessReminders() {
   return useMutation({
     mutationFn: async () => {
       assertNotDemoMode();
-      const { data: { session } } = await supabase.auth.getSession();
-
-      if (!session) {
-        throw new Error('No active session');
-      }
-
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-
       const response = await fetch(
-        `${supabaseUrl}/functions/v1/process-appointment-reminders`,
+        '/api/process-appointment-reminders',
         {
           method: 'POST',
+          credentials: 'include',
           headers: {
-            Authorization: `Bearer ${session.access_token}`,
             'Content-Type': 'application/json',
           },
         }

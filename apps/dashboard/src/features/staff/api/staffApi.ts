@@ -27,12 +27,12 @@ export async function getStaffMembers(clinicId: string): Promise<StaffMember[]> 
 
   const rows = data || [];
 
-  const userIds = rows.map((r) => r.user_id);
+  const userIds = rows.map((r: StaffMember) => r.user_id);
 
   if (userIds.length === 0) return [];
 
   const { data: usersData, error: usersError } = await supabase
-    .from('auth_users_view')
+    .from('users')
     .select('id, email')
     .in('id', userIds);
 
@@ -41,7 +41,7 @@ export async function getStaffMembers(clinicId: string): Promise<StaffMember[]> 
       .rpc('get_users_by_ids', { user_ids: userIds });
 
     if (profilesError) {
-      return rows.map((r) => ({
+      return rows.map((r: StaffMember) => ({
         ...r,
         email: r.user_id,
       }));
@@ -51,7 +51,7 @@ export async function getStaffMembers(clinicId: string): Promise<StaffMember[]> 
       (profilesData || []).map((u: { id: string; email: string }) => [u.id, u.email])
     );
 
-    return rows.map((r) => ({
+    return rows.map((r: StaffMember) => ({
       ...r,
       email: emailMap.get(r.user_id) || r.user_id,
     }));
@@ -61,7 +61,7 @@ export async function getStaffMembers(clinicId: string): Promise<StaffMember[]> 
     (usersData || []).map((u: { id: string; email: string }) => [u.id, u.email])
   );
 
-  return rows.map((r) => ({
+  return rows.map((r: StaffMember) => ({
     ...r,
     email: emailMap.get(r.user_id) || r.user_id,
   }));
