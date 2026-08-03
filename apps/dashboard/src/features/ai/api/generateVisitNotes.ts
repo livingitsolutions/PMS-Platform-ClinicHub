@@ -43,19 +43,17 @@ export async function generateVisitNotes(input: string): Promise<GenerateNotesRe
     );
   }
 
-  const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-visit-notes`;
-
   let response: Response;
   try {
-    response = await fetch(apiUrl, {
+    response = await fetch('/api/generate-visit-notes', {
       method: 'POST',
+      credentials: 'include',
       headers: {
-        'Authorization': `Bearer ${session.access_token}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ input }),
     });
-  } catch (error) {
+  } catch {
     throw new VisitNotesGenerationError(
       'Network error',
       'NETWORK_ERROR',

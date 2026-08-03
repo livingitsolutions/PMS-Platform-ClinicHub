@@ -83,7 +83,7 @@ export async function getOrCreateInvoice(visitId: string): Promise<Invoice> {
   if (proceduresError) throw proceduresError;
 
   const totalAmount = procedures?.reduce(
-    (sum, proc) => sum + proc.quantity * proc.price,
+    (sum: number, proc: { quantity: number; price: number }) => sum + proc.quantity * proc.price,
     0
   ) || 0;
 
@@ -268,7 +268,7 @@ export async function recalculateInvoiceTotal(visitId: string): Promise<void> {
   if (proceduresError) throw proceduresError;
 
   const totalAmount = procedures?.reduce(
-    (sum, proc) => sum + proc.quantity * proc.price,
+    (sum: number, proc: { quantity: number; price: number }) => sum + proc.quantity * proc.price,
     0
   ) || 0;
 

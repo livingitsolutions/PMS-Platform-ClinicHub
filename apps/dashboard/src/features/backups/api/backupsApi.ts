@@ -79,9 +79,9 @@ export async function getBackupStats(clinicId: string): Promise<{
   if (allError) throw allError;
 
   const totalBackups = allBackups?.length || 0;
-  const completedBackups = allBackups?.filter(b => b.backup_status === 'completed').length || 0;
-  const failedBackups = allBackups?.filter(b => b.backup_status === 'failed').length || 0;
-  const totalSize = allBackups?.reduce((sum, b) => sum + (b.backup_size || 0), 0) || 0;
+  const completedBackups = allBackups?.filter((b: Pick<Backup, 'backup_status'>) => b.backup_status === 'completed').length || 0;
+  const failedBackups = allBackups?.filter((b: Pick<Backup, 'backup_status'>) => b.backup_status === 'failed').length || 0;
+  const totalSize = allBackups?.reduce((sum: number, b: Pick<Backup, 'backup_size'>) => sum + (b.backup_size || 0), 0) || 0;
 
   return {
     totalBackups,
@@ -123,17 +123,11 @@ export async function createBackup(payload: CreateBackupPayload): Promise<Backup
 
   const backup = data as Backup;
 
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-  const { data: sessionData } = await supabase.auth.getSession();
-  const token = sessionData?.session?.access_token || supabaseAnonKey;
-
-  fetch(`${supabaseUrl}/functions/v1/perform-backup`, {
+  fetch('/api/perform-backup', {
     method: 'POST',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-      Apikey: supabaseAnonKey,
     },
     body: JSON.stringify({ backup_id: backup.id, clinic_id: backup.clinic_id }),
   }).catch((err) => console.error('Backup edge function error:', err));

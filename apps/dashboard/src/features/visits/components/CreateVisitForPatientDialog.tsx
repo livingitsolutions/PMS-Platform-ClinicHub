@@ -124,7 +124,7 @@ export function CreateVisitForPatientDialog({
                 <SelectValue placeholder="Select provider" />
               </SelectTrigger>
               <SelectContent>
-                {providers?.map((p) => (
+                {providers?.map((p: { id: string; name: string }) => (
                   <SelectItem key={p.id} value={p.id}>
                     {p.name}
                   </SelectItem>

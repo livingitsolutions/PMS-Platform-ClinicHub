@@ -1,14 +1,8 @@
-import { supabase } from '@/lib/supabase';
-
 export async function payInvoice(stripeInvoiceId: string): Promise<string> {
-  const { data: { session } } = await supabase.auth.getSession();
-
-  const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-invoice-payment-session`;
-
-  const response = await fetch(apiUrl, {
+  const response = await fetch('/api/create-invoice-payment-session', {
     method: 'POST',
+    credentials: 'include',
     headers: {
-      'Authorization': `Bearer ${session?.access_token ?? import.meta.env.VITE_SUPABASE_ANON_KEY}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
