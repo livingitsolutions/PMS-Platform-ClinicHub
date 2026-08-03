@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { apiClient } from '@/lib/apiClient';
 import { assertNotDemoMode } from '@/lib/demoMode';
 
 export interface Notification {
@@ -13,8 +13,8 @@ export interface Notification {
 }
 
 export async function getUserNotifications(userId: string, limit = 50): Promise<Notification[]> {
-  const { data, error } = await supabase
-    .from('notifications')
+  const { data, error } = await apiClient
+    .from<Notification[]>('notifications')
     .select('*')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
@@ -26,7 +26,7 @@ export async function getUserNotifications(userId: string, limit = 50): Promise<
 }
 
 export async function getUnreadCount(userId: string): Promise<number> {
-  const { count, error } = await supabase
+  const { count, error } = await apiClient
     .from('notifications')
     .select('*', { count: 'exact', head: true })
     .eq('user_id', userId)
@@ -39,7 +39,7 @@ export async function getUnreadCount(userId: string): Promise<number> {
 
 export async function markAsRead(notificationId: string): Promise<void> {
   assertNotDemoMode();
-  const { error } = await supabase
+  const { error } = await apiClient
     .from('notifications')
     .update({ read: true })
     .eq('id', notificationId);
@@ -49,7 +49,7 @@ export async function markAsRead(notificationId: string): Promise<void> {
 
 export async function markAllAsRead(userId: string): Promise<void> {
   assertNotDemoMode();
-  const { error } = await supabase
+  const { error } = await apiClient
     .from('notifications')
     .update({ read: true })
     .eq('user_id', userId)
@@ -66,7 +66,7 @@ export async function createNotification(
   metadata: Record<string, unknown> = {}
 ): Promise<void> {
   assertNotDemoMode();
-  const { error } = await supabase
+  const { error } = await apiClient
     .from('notifications')
     .insert({
       clinic_id: clinicId,

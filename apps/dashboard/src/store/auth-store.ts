@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { supabase, type AuthUser } from '@/lib/supabase';
+import { apiClient, type AuthUser } from '@/lib/apiClient';
 
 interface AuthState {
   user: AuthUser | null;
@@ -15,7 +15,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   setUser: (user) => set({ user }),
   setLoading: (loading) => set({ loading }),
   logout: async () => {
-    await supabase.auth.signOut();
+    await apiClient.auth.signOut();
     set({ user: null });
   },
 }));

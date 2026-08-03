@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { apiClient } from '@/lib/apiClient';
 import { logAuditEvent, AuditActions, EntityTypes } from '@/lib/audit';
 import { assertNotDemoMode } from '@/lib/demoMode';
 import { VisitWithDetails } from './visitsApi';
@@ -39,7 +39,7 @@ export async function createWalkInVisit(
   payload: CreateWalkInVisitPayload
 ): Promise<VisitWithDetails> {
   assertNotDemoMode();
-  const { data, error } = await supabase
+  const { data, error } = await apiClient
     .from('visits')
     .insert({
       clinic_id: payload.clinic_id,
@@ -57,7 +57,7 @@ export async function createWalkInVisit(
 
   const visit = data as unknown as VisitWithDetails;
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await apiClient.auth.getUser();
   if (user) {
     await logAuditEvent({
       clinicId: payload.clinic_id,

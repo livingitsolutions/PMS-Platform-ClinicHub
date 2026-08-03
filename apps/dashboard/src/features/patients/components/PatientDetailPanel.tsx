@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/lib/supabase';
+import { apiClient } from '@/lib/apiClient';
 import { Calendar, Stethoscope, FileText, ArrowRight, ClipboardList, Activity, CirclePlus as PlusCircle } from 'lucide-react';
 import type { Patient } from '../api/patientsApi';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,7 @@ interface Visit {
 
 interface Invoice {
   id: string;
+  visit_id: string;
   total_amount: number;
   amount_paid: number;
   status: string;
@@ -32,8 +33,8 @@ async function getPatientVisitsWithInvoices(
   patientId: string,
   clinicId: string
 ): Promise<VisitWithInvoice[]> {
-  const { data: visits, error } = await supabase
-    .from('visits')
+  const { data: visits, error } = await apiClient
+    .from<Visit[]>('visits')
     .select('id, visit_date, status, chief_complaint, diagnosis, providers(name)')
     .eq('patient_id', patientId)
     .eq('clinic_id', clinicId)
@@ -44,12 +45,12 @@ async function getPatientVisitsWithInvoices(
   if (!visits || visits.length === 0) return [];
 
   const visitIds = visits.map((v: Visit) => v.id);
-  const { data: invoices } = await supabase
-    .from('invoices')
+  const { data: invoices } = await apiClient
+    .from<Invoice[]>('invoices')
     .select('id, visit_id, total_amount, amount_paid, status')
     .in('visit_id', visitIds);
 
-  const invoiceMap = new Map((invoices || []).map((inv: Invoice & { visit_id: string }) => [inv.visit_id, inv]));
+  const invoiceMap = new Map((invoices || []).map((inv) => [inv.visit_id, inv]));
 
   return visits.map((v: Visit) => ({
     ...(v as unknown as Visit),

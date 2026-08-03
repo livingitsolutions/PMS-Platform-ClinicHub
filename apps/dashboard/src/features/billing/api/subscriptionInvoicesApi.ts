@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { apiClient } from '@/lib/apiClient';
 
 export interface SubscriptionInvoice {
   id: string;
@@ -15,7 +15,7 @@ export interface SubscriptionInvoice {
 }
 
 export async function getSubscriptionInvoices(clinicId: string): Promise<SubscriptionInvoice[]> {
-  const { data, error } = await supabase
+  const { data, error } = await apiClient
     .from('subscription_invoices')
     .select('*')
     .eq('clinic_id', clinicId)

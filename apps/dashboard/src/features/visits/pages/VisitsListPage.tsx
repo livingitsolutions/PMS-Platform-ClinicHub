@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/lib/supabase';
+import { apiClient } from '@/lib/apiClient';
 import { useClinicStore } from '@/store/clinic-store';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Pagination } from '@/components/ui/pagination';
@@ -49,12 +49,12 @@ export function VisitsListPage() {
       const from = (currentPage - 1) * pageSize;
       const to = from + pageSize - 1;
 
-      const { count } = await supabase
+      const { count } = await apiClient
         .from('visits')
         .select('*', { count: 'exact', head: true })
         .eq('clinic_id', clinicId);
 
-      const { data, error } = await supabase
+      const { data, error } = await apiClient
         .from('visits')
         .select(`
           id,

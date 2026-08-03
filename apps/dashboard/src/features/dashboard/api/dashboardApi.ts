@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { apiClient } from '@/lib/apiClient';
 
 export interface TodayStats {
   totalVisits: number;
@@ -31,7 +31,7 @@ export async function getTodayStats(clinicId: string): Promise<TodayStats> {
   today.setHours(0, 0, 0, 0);
   const todayISO = today.toISOString();
 
-  const { data, error } = await supabase.rpc('get_today_stats', {
+  const { data, error } = await apiClient.rpc('get_today_stats', {
     p_clinic_id: clinicId,
     p_today: todayISO
   });
@@ -48,7 +48,7 @@ export async function getMonthlyRevenue(
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
   thirtyDaysAgo.setHours(0, 0, 0, 0);
 
-  const { data, error } = await supabase.rpc('get_monthly_revenue', {
+  const { data, error } = await apiClient.rpc('get_monthly_revenue', {
     p_clinic_id: clinicId,
     p_start_date: thirtyDaysAgo.toISOString()
   });
@@ -64,7 +64,7 @@ export async function getTopProcedures(
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-  const { data, error } = await supabase.rpc('get_top_procedures', {
+  const { data, error } = await apiClient.rpc('get_top_procedures', {
     p_clinic_id: clinicId,
     p_start_date: thirtyDaysAgo.toISOString()
   });
@@ -80,7 +80,7 @@ export async function getTopProviders(
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-  const { data, error } = await supabase.rpc('get_top_providers', {
+  const { data, error } = await apiClient.rpc('get_top_providers', {
     p_clinic_id: clinicId,
     p_start_date: thirtyDaysAgo.toISOString()
   });

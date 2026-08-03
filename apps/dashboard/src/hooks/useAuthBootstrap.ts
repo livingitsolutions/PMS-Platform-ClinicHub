@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { apiClient } from '@/lib/apiClient';
 import { useAuthStore } from '@/store/auth-store';
 
 export const useAuthBootstrap = () => {
@@ -9,7 +9,7 @@ export const useAuthBootstrap = () => {
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session } } = await apiClient.auth.getSession();
         setUser(session?.user ?? null);
       } catch (error) {
         console.error('Error fetching session:', error);
@@ -21,7 +21,7 @@ export const useAuthBootstrap = () => {
 
     initializeAuth();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+    const { data: { subscription } } = apiClient.auth.onAuthStateChange(
       (_event, session) => {
         setUser(session?.user ?? null);
       }

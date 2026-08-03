@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { supabase } from '@/lib/supabase';
+import { apiClient } from '@/lib/apiClient';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -48,7 +48,7 @@ export const LoginPage = () => {
 
     try {
       const { error: signInError } =
-        await supabase.auth.signInWithPassword({
+        await apiClient.auth.signInWithPassword({
           email: data.email,
           password: data.password,
         });

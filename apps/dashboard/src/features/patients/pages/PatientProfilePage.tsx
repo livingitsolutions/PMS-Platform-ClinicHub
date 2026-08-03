@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase';
+import { apiClient } from '@/lib/apiClient';
 import { useClinicStore } from '@/store/clinic-store';
 import { Patient } from '../api/patientsApi';
 import { PatientTimeline } from '../components/PatientTimeline';
@@ -29,7 +29,7 @@ interface Visit {
 }
 
 async function getPatient(patientId: string, clinicId: string): Promise<Patient> {
-  const { data, error } = await supabase
+  const { data, error } = await apiClient
     .from('patients')
     .select(`
       id,
@@ -55,7 +55,7 @@ async function getPatient(patientId: string, clinicId: string): Promise<Patient>
 }
 
 async function getPatientVisits(patientId: string, clinicId: string): Promise<Visit[]> {
-  const { data, error } = await supabase
+  const { data, error } = await apiClient
     .from('visits')
     .select(`
       id,

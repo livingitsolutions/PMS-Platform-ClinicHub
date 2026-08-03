@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { apiClient } from './apiClient';
 
 export interface AuditEventParams {
   clinicId: string;
@@ -6,7 +6,7 @@ export interface AuditEventParams {
   action: string;
   entityType: string;
   entityId: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export async function logAuditEvent({
@@ -18,7 +18,7 @@ export async function logAuditEvent({
   metadata = {},
 }: AuditEventParams): Promise<void> {
   try {
-    const { error } = await supabase.from('audit_logs').insert({
+    const { error } = await apiClient.from('audit_logs').insert({
       clinic_id: clinicId,
       user_id: userId,
       action,

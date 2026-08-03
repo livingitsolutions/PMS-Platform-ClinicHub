@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { apiClient } from '@/lib/apiClient';
 import { assertNotDemoMode } from '@/lib/demoMode';
 
 export interface Provider {
@@ -30,12 +30,12 @@ export async function getProviders(
   const from = (page - 1) * limit;
   const to = from + limit - 1;
 
-  const { count } = await supabase
+  const { count } = await apiClient
     .from('providers')
     .select('*', { count: 'exact', head: true })
     .eq('clinic_id', clinicId);
 
-  const { data, error } = await supabase
+  const { data, error } = await apiClient
     .from('providers')
     .select(`
       id,
@@ -63,7 +63,7 @@ export async function createProvider(
   payload: CreateProviderPayload
 ): Promise<Provider> {
   assertNotDemoMode();
-  const { data, error } = await supabase
+  const { data, error } = await apiClient
     .from('providers')
     .insert({
       clinic_id: clinicId,
@@ -85,10 +85,10 @@ export async function updateProvider(
 ): Promise<Provider> {
   assertNotDemoMode();
   const cleanPayload = Object.fromEntries(
-    Object.entries(payload).filter(([_, v]) => v !== undefined)
+    Object.entries(payload).filter(([, value]) => value !== undefined)
   );
 
-  const { data, error } = await supabase
+  const { data, error } = await apiClient
     .from('providers')
     .update({
       ...cleanPayload,
@@ -105,7 +105,7 @@ export async function updateProvider(
 
 export async function deleteProvider(providerId: string): Promise<void> {
   assertNotDemoMode();
-  const { error } = await supabase
+  const { error } = await apiClient
     .from('providers')
     .delete()
     .eq('id', providerId);

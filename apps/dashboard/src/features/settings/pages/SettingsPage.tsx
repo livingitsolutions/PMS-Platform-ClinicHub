@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase';
+import { apiClient } from '@/lib/apiClient';
 import { useClinicStore } from '@/store/clinic-store';
 import {
   Card,
@@ -25,8 +25,8 @@ interface Clinic {
 }
 
 async function getClinic(clinicId: string): Promise<Clinic> {
-  const { data, error } = await supabase
-    .from('clinics')
+  const { data, error } = await apiClient
+    .from<Clinic | null>('clinics')
     .select('id, name, address, phone, email')
     .eq('id', clinicId)
     .maybeSingle();

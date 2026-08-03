@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { apiClient } from '@/lib/apiClient';
 import { createNotification } from '@/features/notifications/api/notificationsApi';
 import { assertNotDemoMode } from '@/lib/demoMode';
 
@@ -51,7 +51,7 @@ export async function getAppointments(
     patientId?: string;
   }
 ): Promise<Appointment[]> {
-  let query = supabase
+  let query = apiClient
     .from('appointments')
     .select(`
       id,
@@ -93,7 +93,7 @@ export async function createAppointment(
   payload: CreateAppointmentPayload
 ): Promise<Appointment> {
   assertNotDemoMode();
-  const { data, error } = await supabase
+  const { data, error } = await apiClient
     .from('appointments')
     .insert({
       clinic_id: clinicId,
@@ -111,14 +111,14 @@ export async function createAppointment(
 
   const appointment = data as Appointment;
 
-  const { data: patientData } = await supabase
-    .from('patients')
+  const { data: patientData } = await apiClient
+    .from<{ first_name: string; last_name: string }>('patients')
     .select('first_name, last_name')
     .eq('id', appointment.patient_id)
     .single();
 
-  const { data: clinicUsers } = await supabase
-    .from('user_clinics')
+  const { data: clinicUsers } = await apiClient
+    .from<Array<{ user_id: string }>>('user_clinics')
     .select('user_id')
     .eq('clinic_id', clinicId);
 
@@ -156,7 +156,7 @@ export async function updateAppointment(
   payload: UpdateAppointmentPayload
 ): Promise<Appointment> {
   assertNotDemoMode();
-  const { data, error } = await supabase
+  const { data, error } = await apiClient
     .from('appointments')
     .update(payload)
     .eq('id', appointmentId)
@@ -170,7 +170,7 @@ export async function updateAppointment(
 
 export async function deleteAppointment(appointmentId: string): Promise<void> {
   assertNotDemoMode();
-  const { error } = await supabase
+  const { error } = await apiClient
     .from('appointments')
     .delete()
     .eq('id', appointmentId);
@@ -179,7 +179,7 @@ export async function deleteAppointment(appointmentId: string): Promise<void> {
 }
 
 export async function getProviders(clinicId: string): Promise<Provider[]> {
-  const { data, error } = await supabase
+  const { data, error } = await apiClient
     .from('providers')
     .select('*')
     .eq('clinic_id', clinicId)

@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { apiClient } from '@/lib/apiClient';
 
 export interface Subscription {
   id: string;
@@ -13,8 +13,8 @@ export interface Subscription {
 }
 
 export async function getClinicSubscription(clinicId: string): Promise<Subscription | null> {
-  const { data, error } = await supabase
-    .from('subscriptions')
+  const { data, error } = await apiClient
+    .from<Subscription | null>('subscriptions')
     .select('*')
     .eq('clinic_id', clinicId)
     .in('status', ['active', 'trialing'])
@@ -44,25 +44,20 @@ export async function createCheckoutSession(
 ): Promise<CheckoutSessionResponse> {
   const {
     data: { session },
-  } = await supabase.auth.getSession();
+  } = await apiClient.auth.getSession();
 
   if (!session) {
     throw new Error('Not authenticated');
   }
 
-  const response = await fetch('/api/create-checkout-session', {
-    method: 'POST',
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
+  const { data, error } = await apiClient.functions.invoke<CheckoutSessionResponse>(
+    'create-checkout-session',
+    { body: payload },
+  );
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.error || `Checkout failed (${response.status})`);
-  }
-
-  return await response.json();
+  if (error) throw error;
+  if (!data) throw new Error('Checkout session returned no data');
+  return data;
 }
 
 export function isSubscriptionActive(subscription: Subscription | null): boolean {

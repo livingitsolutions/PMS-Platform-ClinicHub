@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useClinicStore } from '@/store/clinic-store';
 import { assertNotDemoMode } from '@/lib/demoMode';
+import { apiClient } from '@/lib/apiClient';
 import {
   getPendingReminders,
   getClinicReminders,
@@ -91,23 +92,14 @@ export function useProcessReminders() {
   return useMutation({
     mutationFn: async () => {
       assertNotDemoMode();
-      const response = await fetch(
-        '/api/process-appointment-reminders',
-        {
-          method: 'POST',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
+      const { data, error } = await apiClient.functions.invoke<{
+        processed: number;
+        sent: number;
+        skipped: number;
+      }>('process-appointment-reminders');
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to process reminders');
-      }
-
-      return response.json();
+      if (error) throw error;
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['reminders', 'pending', clinicId] });

@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { apiClient } from '@/lib/apiClient';
 import { assertNotDemoMode } from '@/lib/demoMode';
 
 export interface AppointmentReminder {
@@ -36,7 +36,7 @@ export interface PendingReminderWithDetails extends AppointmentReminder {
 export async function getPendingReminders(
   clinicId?: string
 ): Promise<PendingReminderWithDetails[]> {
-  let query = supabase
+  let query = apiClient
     .from('appointment_reminders')
     .select(`
       id,
@@ -83,7 +83,7 @@ export async function getPendingReminders(
 
 export async function markReminderAsSent(reminderId: string): Promise<void> {
   assertNotDemoMode();
-  const { error } = await supabase
+  const { error } = await apiClient
     .from('appointment_reminders')
     .update({ sent: true })
     .eq('id', reminderId);
@@ -95,7 +95,7 @@ export async function getClinicReminders(
   clinicId: string,
   includeAll: boolean = false
 ): Promise<AppointmentReminder[]> {
-  let query = supabase
+  let query = apiClient
     .from('appointment_reminders')
     .select('*')
     .eq('clinic_id', clinicId)
@@ -118,7 +118,7 @@ export async function createManualReminder(
   reminderTime: string
 ): Promise<AppointmentReminder> {
   assertNotDemoMode();
-  const { data, error } = await supabase
+  const { data, error } = await apiClient
     .from('appointment_reminders')
     .insert({
       appointment_id: appointmentId,
@@ -135,7 +135,7 @@ export async function createManualReminder(
 
 export async function deleteReminder(reminderId: string, clinicId: string): Promise<void> {
   assertNotDemoMode();
-  const { error } = await supabase
+  const { error } = await apiClient
     .from('appointment_reminders')
     .delete()
     .eq('id', reminderId)

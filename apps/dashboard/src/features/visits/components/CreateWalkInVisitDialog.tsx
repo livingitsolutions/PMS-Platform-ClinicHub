@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useClinicStore } from '@/store/clinic-store';
-import { supabase } from '@/lib/supabase';
+import { apiClient } from '@/lib/apiClient';
 import { createWalkInVisit } from '../api/walkInVisitApi';
 
 interface CreateWalkInVisitDialogProps {
@@ -48,8 +48,8 @@ export function CreateWalkInVisitDialog({ onCreated }: CreateWalkInVisitDialogPr
   const { data: patients } = useQuery({
     queryKey: ['patients-list', clinicId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('patients')
+      const { data, error } = await apiClient
+        .from<Array<{ id: string; first_name: string; last_name: string }>>('patients')
         .select('id, first_name, last_name')
         .eq('clinic_id', clinicId!)
         .order('last_name', { ascending: true });
@@ -62,8 +62,8 @@ export function CreateWalkInVisitDialog({ onCreated }: CreateWalkInVisitDialogPr
   const { data: providers } = useQuery({
     queryKey: ['providers-list', clinicId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('providers')
+      const { data, error } = await apiClient
+        .from<Array<{ id: string; name: string }>>('providers')
         .select('id, name')
         .eq('clinic_id', clinicId!)
         .order('name', { ascending: true });

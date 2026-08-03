@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { apiClient } from '@/lib/apiClient';
 import { logAuditEvent, AuditActions, EntityTypes } from '@/lib/audit';
 import { assertNotDemoMode } from '@/lib/demoMode';
 
@@ -37,7 +37,7 @@ export interface UpdateVisitProcedurePayload {
 }
 
 export async function getVisitProcedures(visitId: string): Promise<VisitProcedure[]> {
-  const { data, error } = await supabase
+  const { data, error } = await apiClient
     .from('visit_procedures')
     .select('*')
     .eq('visit_id', visitId)
@@ -55,8 +55,8 @@ export async function createVisitProcedure(
   let finalPrice = payload.price;
 
   if (finalPrice === null || finalPrice === undefined) {
-    const { data: procedure, error: procedureError } = await supabase
-      .from('procedures')
+    const { data: procedure, error: procedureError } = await apiClient
+      .from<Pick<Procedure, 'base_cost'> | null>('procedures')
       .select('base_cost')
       .eq('id', payload.procedure_id)
       .maybeSingle();
@@ -67,7 +67,7 @@ export async function createVisitProcedure(
     finalPrice = procedure.base_cost;
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await apiClient
     .from('visit_procedures')
     .insert({
       visit_id: payload.visit_id,
@@ -95,7 +95,7 @@ export async function updateVisitProcedure(
   if (payload.price !== undefined) updateData.price = payload.price;
   if (payload.notes !== undefined) updateData.notes = payload.notes;
 
-  const { data, error } = await supabase
+  const { data, error } = await apiClient
     .from('visit_procedures')
     .update(updateData)
     .eq('id', id)
@@ -106,14 +106,14 @@ export async function updateVisitProcedure(
 
   const visitProcedure = data as VisitProcedure;
 
-  const { data: visit } = await supabase
-    .from('visits')
+  const { data: visit } = await apiClient
+    .from<{ clinic_id: string } | null>('visits')
     .select('clinic_id')
     .eq('id', visitProcedure.visit_id)
     .maybeSingle();
 
   if (visit) {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await apiClient.auth.getUser();
     if (user) {
       await logAuditEvent({
         clinicId: visit.clinic_id,
@@ -134,7 +134,7 @@ export async function updateVisitProcedure(
 
 export async function deleteVisitProcedure(id: string): Promise<void> {
   assertNotDemoMode();
-  const { error } = await supabase
+  const { error } = await apiClient
     .from('visit_procedures')
     .delete()
     .eq('id', id);

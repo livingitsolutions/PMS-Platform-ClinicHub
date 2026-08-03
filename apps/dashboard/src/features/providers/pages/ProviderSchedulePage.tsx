@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase';
+import { apiClient } from '@/lib/apiClient';
 import { useClinicStore } from '@/store/clinic-store';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -21,7 +21,7 @@ interface Provider {
 }
 
 async function getProviders(clinicId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await apiClient
     .from('providers')
     .select('id, name, specialization')
     .eq('clinic_id', clinicId)

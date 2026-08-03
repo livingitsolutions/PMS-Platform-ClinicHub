@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { apiClient } from '@/lib/apiClient';
 
 export interface GenerateNotesInput {
   input: string;
@@ -29,7 +29,7 @@ export class VisitNotesGenerationError extends Error {
 }
 
 export async function generateVisitNotes(input: string): Promise<GenerateNotesResponse> {
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await apiClient.auth.getSession();
 
   if (!session) {
     throw new VisitNotesGenerationError('No active session', 'AUTH_ERROR');
@@ -43,43 +43,19 @@ export async function generateVisitNotes(input: string): Promise<GenerateNotesRe
     );
   }
 
-  let response: Response;
-  try {
-    response = await fetch('/api/generate-visit-notes', {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ input }),
-    });
-  } catch {
+  const { data, error } = await apiClient.functions.invoke<GenerateNotesResponse>(
+    'generate-visit-notes',
+    { body: { input } },
+  );
+
+  if (error) {
     throw new VisitNotesGenerationError(
-      'Network error',
-      'NETWORK_ERROR',
-      'Unable to connect to the AI service. Please check your connection and try again.'
+      error.message || 'Failed to generate visit notes',
+      'GENERATION_ERROR',
     );
   }
 
-  if (!response.ok) {
-    let errorData: GenerateNotesError;
-    try {
-      errorData = await response.json();
-    } catch {
-      throw new VisitNotesGenerationError(
-        'Failed to generate visit notes',
-        'UNKNOWN_ERROR',
-        `Server returned status ${response.status}`
-      );
-    }
+  if (!data) throw new VisitNotesGenerationError('No visit notes returned', 'EMPTY_RESPONSE');
 
-    throw new VisitNotesGenerationError(
-      errorData.error || 'Failed to generate visit notes',
-      errorData.code,
-      errorData.details
-    );
-  }
-
-  const data = await response.json();
   return data;
 }

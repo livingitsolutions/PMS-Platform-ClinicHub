@@ -1,6 +1,6 @@
 # Frontend API Migration Checklist
 
-All former Supabase table operations now pass through the authenticated `POST /api/data` REST bridge in `src/lib/supabase.ts`. The bridge preserves the existing query-chain business logic while moving database credentials, tenant checks, and SQL execution into Netlify Functions. New feature work should use explicit feature endpoints rather than adding more compatibility calls.
+All former browser-side table operations now pass through the authenticated REST client in `src/lib/apiClient.ts`. The client sends typed requests to Netlify Functions while database credentials, tenant checks, and SQL execution remain server-side. New feature work should use explicit feature endpoints when available.
 
 ## Shared request and response
 
@@ -11,7 +11,7 @@ All former Supabase table operations now pass through the authenticated `POST /a
 
 ## Feature mapping
 
-| Feature | Current Supabase calls found | Netlify endpoint | Request | Response |
+| Feature | Migrated data calls | Netlify endpoint | Request | Response |
 |---|---|---|---|---|
 | Patients | `patients.select/insert/update/delete`, visit/invoice timeline lookups | `POST /api/data` (`table: patients`) | Filters include `clinic_id` or `id`; writes use the existing patient payload | Patient row(s), optional exact count |
 | Appointments | `appointments.select/insert/update/delete`, patient/provider lookups and date filters | `POST /api/data` (`table: appointments`) | Existing appointment payload; `gte/lte` filters for calendar ranges | Appointment row(s), with requested patient/provider relations |
@@ -32,7 +32,7 @@ All former Supabase table operations now pass through the authenticated `POST /a
 
 ## Follow-up checklist
 
-- Replace compatibility calls feature-by-feature with typed endpoint modules when changing that feature.
+- Prefer typed feature endpoint modules over adding new generic table requests.
 - Add endpoint-level integration tests using `netlify dev` and a database branch.
 - Confirm every imported Supabase user has the same UUID in Netlify Identity or in custom JWT `sub` claims.
 - Verify owner/admin/staff permissions for destructive operations during acceptance testing.

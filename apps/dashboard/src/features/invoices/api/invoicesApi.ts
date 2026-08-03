@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { apiClient } from '@/lib/apiClient';
 import { logAuditEvent, AuditActions, EntityTypes } from '@/lib/audit';
 import { createNotification } from '@/features/notifications/api/notificationsApi';
 import { assertNotDemoMode } from '@/lib/demoMode';
@@ -53,7 +53,7 @@ export interface CreatePaymentPayload {
 }
 
 export async function getInvoiceByVisit(visitId: string): Promise<Invoice | null> {
-  const { data, error } = await supabase
+  const { data, error } = await apiClient
     .from('invoices')
     .select(INVOICE_SELECT)
     .eq('visit_id', visitId)
@@ -66,8 +66,8 @@ export async function getInvoiceByVisit(visitId: string): Promise<Invoice | null
 
 export async function getOrCreateInvoice(visitId: string): Promise<Invoice> {
   assertNotDemoMode();
-  const { data: visit, error: visitError } = await supabase
-    .from('visits')
+  const { data: visit, error: visitError } = await apiClient
+    .from<{ clinic_id: string }>('visits')
     .select('clinic_id')
     .eq('id', visitId)
     .single();
@@ -75,8 +75,8 @@ export async function getOrCreateInvoice(visitId: string): Promise<Invoice> {
   if (visitError) throw visitError;
   if (!visit) throw new Error('Visit not found');
 
-  const { data: procedures, error: proceduresError } = await supabase
-    .from('visit_procedures')
+  const { data: procedures, error: proceduresError } = await apiClient
+    .from<Array<{ quantity: number; price: number }>>('visit_procedures')
     .select('quantity, price')
     .eq('visit_id', visitId);
 
@@ -87,8 +87,8 @@ export async function getOrCreateInvoice(visitId: string): Promise<Invoice> {
     0
   ) || 0;
 
-  const { data: upsertedInvoice, error: upsertError } = await supabase
-    .from('invoices')
+  const { data: upsertedInvoice, error: upsertError } = await apiClient
+    .from<Invoice>('invoices')
     .upsert(
       {
         clinic_id: visit.clinic_id,
@@ -109,8 +109,8 @@ export async function getOrCreateInvoice(visitId: string): Promise<Invoice> {
 
   const invoice = upsertedInvoice as Invoice;
 
-  const { data: existingInvoice } = await supabase
-    .from('invoices')
+  const { data: existingInvoice } = await apiClient
+    .from<Pick<Invoice, 'created_at'>>('invoices')
     .select('created_at')
     .eq('id', invoice.id)
     .single();
@@ -119,7 +119,7 @@ export async function getOrCreateInvoice(visitId: string): Promise<Invoice> {
     new Date(existingInvoice.created_at).getTime() === new Date(invoice.created_at).getTime();
 
   if (isNewInvoice) {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await apiClient.auth.getUser();
     if (user) {
       await logAuditEvent({
         clinicId: visit.clinic_id,
@@ -139,7 +139,7 @@ export async function getOrCreateInvoice(visitId: string): Promise<Invoice> {
 }
 
 export async function getPaymentsByInvoice(invoiceId: string): Promise<Payment[]> {
-  const { data, error } = await supabase
+  const { data, error } = await apiClient
     .from('payments')
     .select(PAYMENT_SELECT)
     .eq('invoice_id', invoiceId)
@@ -152,8 +152,8 @@ export async function getPaymentsByInvoice(invoiceId: string): Promise<Payment[]
 
 export async function createPayment(payload: CreatePaymentPayload): Promise<Payment> {
   assertNotDemoMode();
-  const { data: invoice, error: invoiceError } = await supabase
-    .from('invoices')
+  const { data: invoice, error: invoiceError } = await apiClient
+    .from<Pick<Invoice, 'clinic_id' | 'amount_paid' | 'total_amount'>>('invoices')
     .select('clinic_id, amount_paid, total_amount')
     .eq('id', payload.invoice_id)
     .single();
@@ -161,8 +161,8 @@ export async function createPayment(payload: CreatePaymentPayload): Promise<Paym
   if (invoiceError) throw invoiceError;
   if (!invoice) throw new Error('Invoice not found');
 
-  const { data: payment, error: paymentError } = await supabase
-    .from('payments')
+  const { data: payment, error: paymentError } = await apiClient
+    .from<Payment>('payments')
     .insert({
       clinic_id: invoice.clinic_id,
       invoice_id: payload.invoice_id,
@@ -187,7 +187,7 @@ export async function createPayment(payload: CreatePaymentPayload): Promise<Paym
     newStatus = 'unpaid';
   }
 
-  const { error: updateError } = await supabase
+  const { error: updateError } = await apiClient
     .from('invoices')
     .update({
       amount_paid: newAmountPaid,
@@ -200,7 +200,7 @@ export async function createPayment(payload: CreatePaymentPayload): Promise<Paym
 
   const createdPayment = payment as Payment;
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await apiClient.auth.getUser();
   if (user) {
     await logAuditEvent({
       clinicId: invoice.clinic_id,
@@ -218,8 +218,8 @@ export async function createPayment(payload: CreatePaymentPayload): Promise<Paym
     });
   }
 
-  const { data: clinicUsers } = await supabase
-    .from('user_clinics')
+  const { data: clinicUsers } = await apiClient
+    .from<Array<{ user_id: string }>>('user_clinics')
     .select('user_id')
     .eq('clinic_id', invoice.clinic_id);
 
@@ -251,8 +251,8 @@ export async function createPayment(payload: CreatePaymentPayload): Promise<Paym
 
 export async function recalculateInvoiceTotal(visitId: string): Promise<void> {
   assertNotDemoMode();
-  const { data: invoice, error: invoiceError } = await supabase
-    .from('invoices')
+  const { data: invoice, error: invoiceError } = await apiClient
+    .from<Pick<Invoice, 'id'>>('invoices')
     .select('id')
     .eq('visit_id', visitId)
     .maybeSingle();
@@ -260,8 +260,8 @@ export async function recalculateInvoiceTotal(visitId: string): Promise<void> {
   if (invoiceError) throw invoiceError;
   if (!invoice) return;
 
-  const { data: procedures, error: proceduresError } = await supabase
-    .from('visit_procedures')
+  const { data: procedures, error: proceduresError } = await apiClient
+    .from<Array<{ quantity: number; price: number }>>('visit_procedures')
     .select('quantity, price')
     .eq('visit_id', visitId);
 
@@ -272,7 +272,7 @@ export async function recalculateInvoiceTotal(visitId: string): Promise<void> {
     0
   ) || 0;
 
-  const { error: updateError } = await supabase
+  const { error: updateError } = await apiClient
     .from('invoices')
     .update({
       total_amount: totalAmount,

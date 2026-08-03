@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { apiClient } from '@/lib/apiClient';
 import { assertNotDemoMode } from '@/lib/demoMode';
 
 export interface Backup {
@@ -22,8 +22,8 @@ export interface BackupWithClinic extends Backup {
 }
 
 export async function getAllBackups(): Promise<BackupWithClinic[]> {
-  const { data, error } = await supabase
-    .from('backups')
+  const { data, error } = await apiClient
+    .from<BackupWithClinic[]>('backups')
     .select(`
       *,
       clinics (
@@ -39,7 +39,7 @@ export async function getAllBackups(): Promise<BackupWithClinic[]> {
 }
 
 export async function getClinicBackups(clinicId: string): Promise<Backup[]> {
-  const { data, error } = await supabase
+  const { data, error } = await apiClient
     .from('backups')
     .select('*')
     .eq('clinic_id', clinicId)
@@ -51,7 +51,7 @@ export async function getClinicBackups(clinicId: string): Promise<Backup[]> {
 }
 
 export async function getLatestBackupByClinic(clinicId: string): Promise<Backup | null> {
-  const { data, error } = await supabase
+  const { data, error } = await apiClient
     .from('backups')
     .select('*')
     .eq('clinic_id', clinicId)
@@ -71,8 +71,8 @@ export async function getBackupStats(clinicId: string): Promise<{
   failedBackups: number;
   totalSize: number;
 }> {
-  const { data: allBackups, error: allError } = await supabase
-    .from('backups')
+  const { data: allBackups, error: allError } = await apiClient
+    .from<Array<Pick<Backup, 'backup_status' | 'backup_size'>>>('backups')
     .select('backup_status, backup_size')
     .eq('clinic_id', clinicId);
 
@@ -93,7 +93,7 @@ export async function getBackupStats(clinicId: string): Promise<{
 
 export async function deleteBackup(backupId: string): Promise<void> {
   assertNotDemoMode();
-  const { error } = await supabase
+  const { error } = await apiClient
     .from('backups')
     .delete()
     .eq('id', backupId);
@@ -108,7 +108,7 @@ export interface CreateBackupPayload {
 
 export async function createBackup(payload: CreateBackupPayload): Promise<Backup> {
   assertNotDemoMode();
-  const { data, error } = await supabase
+  const { data, error } = await apiClient
     .from('backups')
     .insert({
       clinic_id: payload.clinic_id || null,
@@ -123,14 +123,13 @@ export async function createBackup(payload: CreateBackupPayload): Promise<Backup
 
   const backup = data as Backup;
 
-  fetch('/api/perform-backup', {
-    method: 'POST',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ backup_id: backup.id, clinic_id: backup.clinic_id }),
-  }).catch((err) => console.error('Backup edge function error:', err));
+  void apiClient.functions
+    .invoke<void>('perform-backup', {
+      body: { backup_id: backup.id, clinic_id: backup.clinic_id },
+    })
+    .then(({ error: backupError }) => {
+      if (backupError) console.error('Backup function error:', backupError);
+    });
 
   return backup;
 }
