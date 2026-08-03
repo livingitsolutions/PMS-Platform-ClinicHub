@@ -48,13 +48,15 @@ export function RevenueChart({ data }: RevenueChartProps) {
               tickFormatter={(value) => `$${value}`}
             />
             <Tooltip
-              formatter={(value: number | undefined) =>
-                value !== undefined
-                  ? `$${value.toLocaleString('en-US', {
+              formatter={(value) => {
+                const numericValue = typeof value === 'number' ? value : Number(value ?? 0);
+
+                return Number.isFinite(numericValue)
+                  ? `$${numericValue.toLocaleString('en-US', {
                       minimumFractionDigits: 2,
                     })}`
-                  : '$0.00'
-              }
+                  : '$0.00';
+              }}
             />
             <Line
               type="monotone"

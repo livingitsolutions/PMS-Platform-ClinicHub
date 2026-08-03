@@ -68,9 +68,13 @@ export function ProcedureReport({ procedures, isLoading, currencyCode = 'PHP' }:
                 tick={{ fontSize: 11 }}
               />
               <Tooltip
-                formatter={(value: number | undefined, name: string | undefined) => {
-                  const v = value ?? 0;
-                  return name === 'count' ? [v, 'Times performed'] : [formatCurrency(v, currencyCode), 'Revenue'];
+                formatter={(value, name) => {
+                  const numericValue = typeof value === 'number' ? value : Number(value ?? 0);
+                  const safeValue = Number.isFinite(numericValue) ? numericValue : 0;
+
+                  return name === 'count'
+                    ? [safeValue, 'Times performed']
+                    : [formatCurrency(safeValue, currencyCode), 'Revenue'];
                 }}
               />
               <Bar dataKey="count" fill="#2563eb" radius={[0, 4, 4, 0]} />

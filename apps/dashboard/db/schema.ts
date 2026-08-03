@@ -288,3 +288,10 @@ export const subscriptionInvoices = pgTable('subscription_invoices', {
   index('idx_subscription_invoices_clinic_id').on(table.clinicId),
   index('idx_subscription_invoices_stripe_invoice_id').on(table.stripeInvoiceId),
 ]);
+
+export const stripeWebhookEvents = pgTable('stripe_webhook_events', {
+  eventId: text('event_id').primaryKey(),
+  eventType: text('event_type').notNull(),
+  receivedAt: timestamp('received_at', { withTimezone: true }).notNull().defaultNow(),
+  processedAt: timestamp('processed_at', { withTimezone: true }),
+});

@@ -76,11 +76,13 @@ export function ProviderPerformanceReport({
                 tick={{ fontSize: 11 }}
               />
               <Tooltip
-                formatter={(value: number | undefined, name: string | undefined) => {
-                  const v = value ?? 0;
+                formatter={(value, name) => {
+                  const numericValue = typeof value === 'number' ? value : Number(value ?? 0);
+                  const safeValue = Number.isFinite(numericValue) ? numericValue : 0;
+
                   return name === 'revenue'
-                    ? [formatCurrency(v, currencyCode), 'Revenue']
-                    : [v, 'Visits'];
+                    ? [formatCurrency(safeValue, currencyCode), 'Revenue']
+                    : [safeValue, 'Visits'];
                 }}
               />
               <Bar dataKey="revenue" fill="#16a34a" radius={[0, 4, 4, 0]} />

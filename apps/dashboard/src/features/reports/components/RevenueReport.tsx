@@ -93,11 +93,14 @@ export function RevenueReport({ data, isLoading, currencyCode = 'PHP' }: Revenue
                 tickFormatter={(v) => formatCurrency(v, currencyCode)}
               />
               <Tooltip
-                formatter={(value: number | undefined) =>
-                  value !== undefined
-                    ? formatCurrency(value, currencyCode)
-                    : formatCurrency(0, currencyCode)
-                }
+                formatter={(value) => {
+                  const numericValue = typeof value === 'number' ? value : Number(value ?? 0);
+
+                  return formatCurrency(
+                    Number.isFinite(numericValue) ? numericValue : 0,
+                    currencyCode
+                  );
+                }}
               />
               <Area
                 type="monotone"
