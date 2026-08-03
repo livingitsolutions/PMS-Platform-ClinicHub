@@ -2,6 +2,7 @@ import { getUser } from '@netlify/identity';
 import { jwtVerify } from 'jose';
 import { db } from '../../../db/index.js';
 import { users } from '../../../db/schema.js';
+import { ensureDemoAccountData } from './demo-data.mjs';
 
 export interface AuthenticatedUser {
   id: string;
@@ -41,6 +42,8 @@ export async function getCurrentUser(request: Request): Promise<AuthenticatedUse
     target: users.id,
     set: { email: authenticatedUser.email },
   });
+
+  await ensureDemoAccountData(authenticatedUser);
 
   return authenticatedUser;
 }

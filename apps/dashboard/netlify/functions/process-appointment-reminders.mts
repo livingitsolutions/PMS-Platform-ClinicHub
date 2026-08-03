@@ -1,6 +1,7 @@
 import type { Config } from '@netlify/functions';
 import { getDatabase } from '@netlify/database';
 import { getCurrentUser } from './_shared/auth.mjs';
+import { assertDemoAccountCanMutate } from './_shared/demo-data.mjs';
 import { errorResponse, json } from './_shared/http.mjs';
 
 export async function processAppointmentReminders() {
@@ -42,7 +43,8 @@ export async function processAppointmentReminders() {
 
 export default async (request: Request) => {
   try {
-    await getCurrentUser(request);
+    const user = await getCurrentUser(request);
+    assertDemoAccountCanMutate(user.email);
     return json(await processAppointmentReminders());
   } catch (error) { return errorResponse(error); }
 };

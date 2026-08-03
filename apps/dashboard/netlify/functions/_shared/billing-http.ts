@@ -2,6 +2,7 @@ import { getUser } from '@netlify/identity';
 import { jwtVerify } from 'jose';
 import Stripe from 'stripe';
 import type { PoolClient } from 'pg';
+import { isDemoAccount } from './demo-data.mjs';
 
 interface AuthenticatedUser {
   id: string;
@@ -91,6 +92,7 @@ async function getCurrentUser(request: Request, client: PoolClient): Promise<Aut
 
 export async function requireClinicOwner(request: Request, client: PoolClient, clinicId: string) {
   const user = await getCurrentUser(request, client);
+  if (isDemoAccount(user.email)) throw new HttpError('Demo account is read-only', 403);
   const membership = await client.query(
     `SELECT 1
        FROM user_clinics

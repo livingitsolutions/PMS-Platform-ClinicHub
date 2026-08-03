@@ -1,6 +1,7 @@
 import type { Config, Context } from '@netlify/functions';
 import { getDatabase } from '@netlify/database';
 import { getCurrentUser } from './_shared/auth.mjs';
+import { assertDemoAccountCanMutate } from './_shared/demo-data.mjs';
 import { errorResponse, json, readJson } from './_shared/http.mjs';
 import { requireClinicAccess } from './_shared/tenant.mjs';
 
@@ -13,6 +14,7 @@ export default async (request: Request, context: Context) => {
     const database = getDatabase();
 
     if (name === 'create_clinic_for_authenticated_user') {
+      assertDemoAccountCanMutate(user.email);
       const client = await database.pool.connect();
       try {
         await client.query('BEGIN');

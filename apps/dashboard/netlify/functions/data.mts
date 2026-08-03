@@ -1,6 +1,7 @@
 import type { Config, Context } from '@netlify/functions';
 import { getDatabase } from '@netlify/database';
 import { getCurrentUser } from './_shared/auth.mjs';
+import { assertDemoAccountCanMutate } from './_shared/demo-data.mjs';
 import { errorResponse, json, readJson } from './_shared/http.mjs';
 
 type Filter = { column: string; operator: 'eq' | 'neq' | 'gte' | 'lte' | 'in' | 'is'; value: unknown };
@@ -247,6 +248,7 @@ export default async (request: Request, _context: Context) => {
     const user = await getCurrentUser(request);
     const input = await readJson<DataRequest>(request);
     if (!tables.has(input.table)) return json({ error: 'Unknown table' }, { status: 400 });
+    if (input.operation !== 'select') assertDemoAccountCanMutate(user.email);
 
     const database = getDatabase();
     const table = identifier(input.table);

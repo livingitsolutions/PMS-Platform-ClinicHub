@@ -2,12 +2,14 @@ import type { Config } from '@netlify/functions';
 import { getDatabase } from '@netlify/database';
 import { getStore } from '@netlify/blobs';
 import { getCurrentUser } from './_shared/auth.mjs';
+import { assertDemoAccountCanMutate } from './_shared/demo-data.mjs';
 import { errorResponse, json, readJson } from './_shared/http.mjs';
 import { requireClinicAccess } from './_shared/tenant.mjs';
 
 export default async (request: Request) => {
   try {
     const user = await getCurrentUser(request);
+    assertDemoAccountCanMutate(user.email);
     const { backup_id, clinic_id } = await readJson<Record<string, string>>(request);
     await requireClinicAccess(user.id, clinic_id, ['owner', 'admin']);
     const database = getDatabase();

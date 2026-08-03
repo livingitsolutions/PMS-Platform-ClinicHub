@@ -1,6 +1,7 @@
 import type { Config } from '@netlify/functions';
 import { getDatabase } from '@netlify/database';
 import { getCurrentUser } from './_shared/auth.mjs';
+import { assertDemoAccountCanMutate } from './_shared/demo-data.mjs';
 import { errorResponse, json, readJson } from './_shared/http.mjs';
 import { requireClinicAccess } from './_shared/tenant.mjs';
 import { getStripe } from './_shared/stripe.mjs';
@@ -8,6 +9,7 @@ import { getStripe } from './_shared/stripe.mjs';
 export default async (request: Request) => {
   try {
     const user = await getCurrentUser(request);
+    assertDemoAccountCanMutate(user.email);
     const { stripe_invoice_id, return_url } = await readJson<Record<string, string>>(request);
     const database = getDatabase();
     const localInvoice = await database.pool.query('SELECT clinic_id FROM subscription_invoices WHERE stripe_invoice_id = $1', [stripe_invoice_id]);
