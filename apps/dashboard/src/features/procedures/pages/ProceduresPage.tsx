@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase';
+import { apiClient } from '@/lib/apiClient';
 import { useClinicStore } from '@/store/clinic-store';
 import { formatCurrency } from '@/lib/currency';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -45,12 +45,12 @@ export function ProceduresPage() {
       const from = (currentPage - 1) * pageSize;
       const to = from + pageSize - 1;
 
-      const { count } = await supabase
+      const { count } = await apiClient
         .from('procedures')
         .select('*', { count: 'exact', head: true })
         .eq('clinic_id', clinicId);
 
-      const { data, error } = await supabase
+      const { data, error } = await apiClient
         .from('procedures')
         .select('id, name, description, base_cost')
         .eq('clinic_id', clinicId)

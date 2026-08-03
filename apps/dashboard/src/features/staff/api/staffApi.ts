@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { apiClient } from '@/lib/apiClient';
 import { UserRole } from '@/store/clinic-store';
 import { assertNotDemoMode } from '@/lib/demoMode';
 
@@ -17,8 +17,8 @@ export interface InviteStaffPayload {
 }
 
 export async function getStaffMembers(clinicId: string): Promise<StaffMember[]> {
-  const { data, error } = await supabase
-    .from('user_clinics')
+  const { data, error } = await apiClient
+    .from<StaffMember[]>('user_clinics')
     .select('id, user_id, clinic_id, role, created_at')
     .eq('clinic_id', clinicId)
     .order('created_at', { ascending: true });
@@ -31,14 +31,14 @@ export async function getStaffMembers(clinicId: string): Promise<StaffMember[]> 
 
   if (userIds.length === 0) return [];
 
-  const { data: usersData, error: usersError } = await supabase
-    .from('users')
+  const { data: usersData, error: usersError } = await apiClient
+    .from<Array<{ id: string; email: string }>>('users')
     .select('id, email')
     .in('id', userIds);
 
   if (usersError) {
-    const { data: profilesData, error: profilesError } = await supabase
-      .rpc('get_users_by_ids', { user_ids: userIds });
+    const { data: profilesData, error: profilesError } = await apiClient
+      .rpc<Array<{ id: string; email: string }>>('get_users_by_ids', { user_ids: userIds });
 
     if (profilesError) {
       return rows.map((r: StaffMember) => ({
@@ -72,15 +72,15 @@ export async function inviteStaffMember(
   payload: InviteStaffPayload
 ): Promise<void> {
   assertNotDemoMode();
-  const { data: authData, error: authError } = await supabase
-    .rpc('get_user_id_by_email', { email_input: payload.email });
+  const { data: authData, error: authError } = await apiClient
+    .rpc<string | null>('get_user_id_by_email', { email_input: payload.email });
 
   if (authError) throw new Error('Could not look up user. Make sure the email is registered.');
 
   const userId: string | null = authData;
   if (!userId) throw new Error('No user found with that email address.');
 
-  const { data: existing } = await supabase
+  const { data: existing } = await apiClient
     .from('user_clinics')
     .select('id')
     .eq('clinic_id', clinicId)
@@ -89,7 +89,7 @@ export async function inviteStaffMember(
 
   if (existing) throw new Error('This user is already a member of this clinic.');
 
-  const { error } = await supabase.from('user_clinics').insert({
+  const { error } = await apiClient.from('user_clinics').insert({
     clinic_id: clinicId,
     user_id: userId,
     role: payload.role,
@@ -103,7 +103,7 @@ export async function updateStaffRole(
   role: UserRole
 ): Promise<void> {
   assertNotDemoMode();
-  const { error } = await supabase
+  const { error } = await apiClient
     .from('user_clinics')
     .update({ role })
     .eq('id', membershipId);
@@ -113,7 +113,7 @@ export async function updateStaffRole(
 
 export async function removeStaffMember(membershipId: string): Promise<void> {
   assertNotDemoMode();
-  const { error } = await supabase
+  const { error } = await apiClient
     .from('user_clinics')
     .delete()
     .eq('id', membershipId);

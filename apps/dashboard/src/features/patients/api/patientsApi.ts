@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { apiClient } from '@/lib/apiClient';
 import { logAuditEvent, AuditActions, EntityTypes } from '@/lib/audit';
 import { assertNotDemoMode } from '@/lib/demoMode';
 
@@ -39,12 +39,12 @@ export async function getPatients(
   const from = (page - 1) * limit;
   const to = from + limit - 1;
 
-  const { count } = await supabase
+  const { count } = await apiClient
     .from('patients')
     .select('*', { count: 'exact', head: true })
     .eq('clinic_id', clinicId);
 
-  const { data, error } = await supabase
+  const { data, error } = await apiClient
     .from('patients')
     .select(`
       id,
@@ -76,7 +76,7 @@ export async function createPatient(
   payload: CreatePatientPayload
 ): Promise<Patient> {
   assertNotDemoMode();
-  const { data, error } = await supabase
+  const { data, error } = await apiClient
     .from('patients')
     .insert({
       clinic_id: clinicId,
@@ -95,7 +95,7 @@ export async function createPatient(
 
   const patient = data as Patient;
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await apiClient.auth.getUser();
   if (user) {
     await logAuditEvent({
       clinicId,
@@ -119,10 +119,10 @@ export async function updatePatient(
 ): Promise<Patient> {
   assertNotDemoMode();
   const cleanPayload = Object.fromEntries(
-    Object.entries(payload).filter(([_, v]) => v !== undefined)
+    Object.entries(payload).filter(([, value]) => value !== undefined)
   );
 
-  const { data, error } = await supabase
+  const { data, error } = await apiClient
     .from('patients')
     .update({
       ...cleanPayload,
@@ -136,7 +136,7 @@ export async function updatePatient(
 
   const patient = data as Patient;
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await apiClient.auth.getUser();
   if (user) {
     await logAuditEvent({
       clinicId: patient.clinic_id,
@@ -156,7 +156,7 @@ export async function updatePatient(
 
 export async function deletePatient(patientId: string, clinicId: string): Promise<void> {
   assertNotDemoMode();
-  const { error } = await supabase
+  const { error } = await apiClient
     .from('patients')
     .delete()
     .eq('id', patientId)

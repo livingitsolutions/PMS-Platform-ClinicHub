@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase';
+import { apiClient } from '@/lib/apiClient';
 import { useClinicStore } from '@/store/clinic-store';
 import { formatCurrency } from '@/lib/currency';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -48,14 +48,14 @@ async function getPatientTimelineData(
   currencyCode: string
 ): Promise<TimelineEvent[]> {
   const [visitsRes, appointmentsRes] = await Promise.all([
-    supabase
+    apiClient
       .from('visits')
       .select('id, visit_date, diagnosis, chief_complaint')
       .eq('patient_id', patientId)
       .eq('clinic_id', clinicId)
       .order('visit_date', { ascending: false })
       .limit(50),
-    supabase
+    apiClient
       .from('appointments')
       .select('id, start_time, status')
       .eq('patient_id', patientId)
@@ -76,7 +76,7 @@ async function getPatientTimelineData(
   let payments: TimelinePayment[] = [];
 
   if (visitIds.length > 0) {
-    const invoicesRes = await supabase
+    const invoicesRes = await apiClient
       .from('invoices')
       .select('id, total_amount, status, created_at')
       .in('visit_id', visitIds)
@@ -88,7 +88,7 @@ async function getPatientTimelineData(
     const invoiceIds = invoices.map((i) => i.id);
 
     if (invoiceIds.length > 0) {
-      const paymentsRes = await supabase
+      const paymentsRes = await apiClient
         .from('payments')
         .select('id, amount, method, created_at')
         .in('invoice_id', invoiceIds)

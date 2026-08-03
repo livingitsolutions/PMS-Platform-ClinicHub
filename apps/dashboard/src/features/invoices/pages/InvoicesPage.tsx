@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase';
+import { apiClient } from '@/lib/apiClient';
 import { useClinicStore } from '@/store/clinic-store';
 import { usePermissions } from '@/hooks/usePermissions';
 import { formatCurrency } from '@/lib/currency';
@@ -48,12 +48,12 @@ async function getInvoices(
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
 
-  const { count } = await supabase
+  const { count } = await apiClient
     .from('invoices')
     .select('*', { count: 'exact', head: true })
     .eq('clinic_id', clinicId);
 
-  const { data, error } = await supabase
+  const { data, error } = await apiClient
     .from('invoices')
     .select(`
       id,

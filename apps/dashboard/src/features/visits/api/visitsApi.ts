@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { apiClient } from '@/lib/apiClient';
 import { logAuditEvent, AuditActions, EntityTypes } from '@/lib/audit';
 import { createNotification } from '@/features/notifications/api/notificationsApi';
 import { assertNotDemoMode } from '@/lib/demoMode';
@@ -55,7 +55,7 @@ export interface VisitWithDetails extends Visit {
 }
 
 export async function getVisit(visitId: string): Promise<VisitWithDetails | null> {
-  const { data, error } = await supabase
+  const { data, error } = await apiClient
     .from('visits')
     .select(VISIT_SELECT)
     .eq('id', visitId)
@@ -69,8 +69,13 @@ export async function getVisit(visitId: string): Promise<VisitWithDetails | null
 export async function getOrCreateVisitByAppointment(
   appointmentId: string
 ): Promise<VisitWithDetails> {
-  const { data: appointment, error: appointmentError } = await supabase
-    .from('appointments')
+  const { data: appointment, error: appointmentError } = await apiClient
+    .from<{
+      clinic_id: string;
+      patient_id: string;
+      provider_id: string | null;
+      start_time: string;
+    }>('appointments')
     .select('clinic_id, patient_id, provider_id, start_time')
     .eq('id', appointmentId)
     .single();
@@ -78,8 +83,8 @@ export async function getOrCreateVisitByAppointment(
   if (appointmentError) throw appointmentError;
   if (!appointment) throw new Error('Appointment not found');
 
-  const { data: upsertedVisit, error: upsertError } = await supabase
-    .from('visits')
+  const { data: upsertedVisit, error: upsertError } = await apiClient
+    .from<VisitWithDetails>('visits')
     .upsert(
       {
         clinic_id: appointment.clinic_id,
@@ -101,8 +106,8 @@ export async function getOrCreateVisitByAppointment(
 
   const visit = upsertedVisit as unknown as VisitWithDetails;
 
-  const { data: existingVisit } = await supabase
-    .from('visits')
+  const { data: existingVisit } = await apiClient
+    .from<Pick<Visit, 'created_at'>>('visits')
     .select('created_at')
     .eq('id', visit.id)
     .single();
@@ -111,7 +116,7 @@ export async function getOrCreateVisitByAppointment(
     new Date(existingVisit.created_at).getTime() === new Date(visit.created_at).getTime();
 
   if (isNewVisit) {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await apiClient.auth.getUser();
     if (user) {
       await logAuditEvent({
         clinicId: appointment.clinic_id,
@@ -140,7 +145,7 @@ export interface UpdateVisitPayload {
 
 export async function updateVisit(visitId: string, payload: UpdateVisitPayload): Promise<VisitWithDetails> {
   assertNotDemoMode();
-  const { data, error } = await supabase
+  const { data, error } = await apiClient
     .from('visits')
     .update(payload)
     .eq('id', visitId)
@@ -151,7 +156,7 @@ export async function updateVisit(visitId: string, payload: UpdateVisitPayload):
 
   const visit = data as unknown as VisitWithDetails;
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await apiClient.auth.getUser();
   if (user) {
     await logAuditEvent({
       clinicId: visit.clinic_id,
@@ -167,8 +172,8 @@ export async function updateVisit(visitId: string, payload: UpdateVisitPayload):
   }
 
   if (payload.status === 'completed') {
-    const { data: clinicUsers } = await supabase
-      .from('user_clinics')
+    const { data: clinicUsers } = await apiClient
+      .from<Array<{ user_id: string }>>('user_clinics')
       .select('user_id')
       .eq('clinic_id', visit.clinic_id);
 

@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { apiClient } from '@/lib/apiClient';
 import { assertNotDemoMode } from '@/lib/demoMode';
 
 export interface ProviderAvailability {
@@ -24,7 +24,7 @@ export interface UpdateAvailabilityPayload {
 }
 
 export async function getProviderAvailability(providerId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await apiClient
     .from('provider_availability')
     .select('*')
     .eq('provider_id', providerId)
@@ -43,7 +43,7 @@ export async function createAvailability(
   payload: CreateAvailabilityPayload
 ) {
   assertNotDemoMode();
-  const { data, error } = await supabase
+  const { data, error } = await apiClient
     .from('provider_availability')
     .insert({
       provider_id: providerId,
@@ -64,7 +64,7 @@ export async function updateAvailability(
   payload: UpdateAvailabilityPayload
 ) {
   assertNotDemoMode();
-  const { data, error } = await supabase
+  const { data, error } = await apiClient
     .from('provider_availability')
     .update(payload)
     .eq('id', availabilityId)
@@ -80,7 +80,7 @@ export async function updateAvailability(
 
 export async function deleteAvailability(availabilityId: string) {
   assertNotDemoMode();
-  const { error } = await supabase
+  const { error } = await apiClient
     .from('provider_availability')
     .delete()
     .eq('id', availabilityId);

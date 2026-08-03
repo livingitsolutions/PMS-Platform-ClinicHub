@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { supabase } from '@/lib/supabase'
+import { apiClient } from '@/lib/apiClient'
 import { useAuthStore } from '@/store/auth-store'
 import { useClinicStore, type Clinic, type UserRole, type ClinicMembership } from '@/store/clinic-store'
 
@@ -22,7 +22,7 @@ export function useUserClinics() {
     queryFn: async () => {
       if (!user?.id) return []
 
-      const { data, error } = await supabase
+      const { data, error } = await apiClient
         .from('user_clinics')
         .select('clinics(*), role')
         .eq('user_id', user.id)

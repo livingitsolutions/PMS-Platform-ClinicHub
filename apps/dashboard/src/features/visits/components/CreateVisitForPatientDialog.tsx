@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useClinicStore } from '@/store/clinic-store';
-import { supabase } from '@/lib/supabase';
+import { apiClient } from '@/lib/apiClient';
 import { createWalkInVisit } from '../api/walkInVisitApi';
 
 interface CreateVisitForPatientDialogProps {
@@ -54,8 +54,8 @@ export function CreateVisitForPatientDialog({
   const { data: providers } = useQuery({
     queryKey: ['providers-list', clinicId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('providers')
+      const { data, error } = await apiClient
+        .from<Array<{ id: string; name: string }>>('providers')
         .select('id, name')
         .eq('clinic_id', clinicId!)
         .order('name', { ascending: true });

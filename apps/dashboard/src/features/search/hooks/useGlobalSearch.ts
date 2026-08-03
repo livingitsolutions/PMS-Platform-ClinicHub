@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase';
+import { apiClient } from '@/lib/apiClient';
 import { useClinicStore } from '@/store/clinic-store';
 import { useState, useEffect } from 'react';
 
@@ -72,7 +72,7 @@ export function useGlobalSearch(searchQuery: string) {
 
       const [patientsResult, visitsResult, appointmentsResult, providersResult] =
         await Promise.all([
-          supabase
+          apiClient
             .from('patients')
             .select('id, first_name, last_name, phone, email')
             .eq('clinic_id', clinicId)
@@ -81,7 +81,7 @@ export function useGlobalSearch(searchQuery: string) {
             )
             .limit(5),
 
-          supabase
+          apiClient
             .from('visits')
             .select(
               `
@@ -102,7 +102,7 @@ export function useGlobalSearch(searchQuery: string) {
             .order('visit_date', { ascending: false })
             .limit(5),
 
-          supabase
+          apiClient
             .from('appointments')
             .select(
               `
@@ -123,7 +123,7 @@ export function useGlobalSearch(searchQuery: string) {
             .order('start_time', { ascending: false })
             .limit(5),
 
-          supabase
+          apiClient
             .from('providers')
             .select('id, name, specialization')
             .eq('clinic_id', clinicId)

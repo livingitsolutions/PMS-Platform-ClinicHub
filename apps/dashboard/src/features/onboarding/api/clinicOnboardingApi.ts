@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { apiClient } from '@/lib/apiClient';
 import { logAuditEvent, AuditActions, EntityTypes } from '@/lib/audit';
 import { assertNotDemoMode } from '@/lib/demoMode';
 
@@ -20,14 +20,14 @@ export interface Clinic {
 
 export async function createClinic(payload: CreateClinicPayload): Promise<Clinic> {
   assertNotDemoMode();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await apiClient.auth.getUser();
 
   if (!user) {
     throw new Error('User must be authenticated to create a clinic');
   }
 
-  const { data: clinic, error: clinicError } = await supabase
-    .rpc('create_clinic_for_authenticated_user', {
+  const { data: clinic, error: clinicError } = await apiClient
+    .rpc<Clinic>('create_clinic_for_authenticated_user', {
       p_name: payload.clinic_name,
       p_address: payload.address,
       p_phone: payload.phone,
@@ -35,6 +35,7 @@ export async function createClinic(payload: CreateClinicPayload): Promise<Clinic
     });
 
   if (clinicError) throw clinicError;
+  if (!clinic) throw new Error('Clinic creation returned no data');
 
   await logAuditEvent({
     clinicId: clinic.id,

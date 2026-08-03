@@ -1,7 +1,7 @@
 import { Link, useLocation, useParams } from 'react-router-dom';
 import { ChevronRight, Hop as Home } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase';
+import { apiClient } from '@/lib/apiClient';
 
 interface Crumb {
   label: string;
@@ -19,8 +19,8 @@ function useBreadcrumbs(): Crumb[] | null {
   const { data: patientName } = useQuery({
     queryKey: ['breadcrumb-patient', patientId],
     queryFn: async () => {
-      const { data } = await supabase
-        .from('patients')
+      const { data } = await apiClient
+        .from<{ first_name: string; last_name: string } | null>('patients')
         .select('first_name, last_name')
         .eq('id', patientId!)
         .maybeSingle();
@@ -33,8 +33,11 @@ function useBreadcrumbs(): Crumb[] | null {
   const { data: visitLabel } = useQuery({
     queryKey: ['breadcrumb-visit', visitId],
     queryFn: async () => {
-      const { data } = await supabase
-        .from('visits')
+      const { data } = await apiClient
+        .from<{
+          visit_date: string;
+          patients: { first_name: string; last_name: string } | null;
+        } | null>('visits')
         .select('visit_date, patients(first_name, last_name)')
         .eq('id', visitId!)
         .maybeSingle();
@@ -44,7 +47,7 @@ function useBreadcrumbs(): Crumb[] | null {
         day: 'numeric',
         year: 'numeric',
       });
-      const patient = data.patients as unknown as { first_name: string; last_name: string } | null;
+      const patient = data.patients;
       return patient ? `${patient.first_name} ${patient.last_name} — ${date}` : date;
     },
     enabled: !!visitId,

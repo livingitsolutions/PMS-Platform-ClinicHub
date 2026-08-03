@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { apiClient } from '@/lib/apiClient';
 import { assertNotDemoMode } from '@/lib/demoMode';
 
 export interface Procedure {
@@ -18,7 +18,7 @@ export interface CreateProcedurePayload {
 }
 
 export async function getProcedures(clinicId: string): Promise<Procedure[]> {
-  const { data, error } = await supabase
+  const { data, error } = await apiClient
     .from('procedures')
     .select(`
       id,
@@ -42,7 +42,7 @@ export async function createProcedure(
   payload: CreateProcedurePayload
 ): Promise<Procedure> {
   assertNotDemoMode();
-  const { data, error } = await supabase
+  const { data, error } = await apiClient
     .from('procedures')
     .insert({
       clinic_id: clinicId,
@@ -64,10 +64,10 @@ export async function updateProcedure(
 ): Promise<Procedure> {
   assertNotDemoMode();
   const cleanPayload = Object.fromEntries(
-    Object.entries(payload).filter(([_, v]) => v !== undefined)
+    Object.entries(payload).filter(([, value]) => value !== undefined)
   );
 
-  const { data, error } = await supabase
+  const { data, error } = await apiClient
     .from('procedures')
     .update({
       ...cleanPayload,
@@ -84,7 +84,7 @@ export async function updateProcedure(
 
 export async function deleteProcedure(procedureId: string): Promise<void> {
   assertNotDemoMode();
-  const { error } = await supabase
+  const { error } = await apiClient
     .from('procedures')
     .delete()
     .eq('id', procedureId);
